@@ -12,6 +12,7 @@ A Imobzi é uma plataforma de CRM imobiliário que oferece uma API aberta para i
 - [Configuração](#configuração)  
 - [Recursos](#recursos)  
 - [Operações](#operações)  
+- [Auto-Paginação](#auto-paginação)  
 - [Webhooks](#webhooks)  
 - [Exemplos](#exemplos)  
 - [Compatibilidade](#compatibilidade)  
@@ -67,66 +68,104 @@ O node suporta os seguintes recursos da API da Imobzi (v1):
 
 | Recurso | Endpoint | Descrição |
 |---------|----------|-----------|
-| **Contatos** | `/v1/contacts` | Gerenciamento de contatos (pessoas e organizações) |
-| **Pessoas** | `/v1/persons` | Gerenciamento de pessoas físicas |
-| **Organizações** | `/v1/organizations` | Gerenciamento de empresas/organizações |
-| **Leads** | `/v1/leads` | Gerenciamento de leads |
+| **Contatos** | `/v1/contacts` | Gerenciamento de contatos |
+| **Pessoas** | `/v1/person/{id}` | Detalhes de pessoas físicas |
+| **Organizações** | `/v1/organization/{id}` | Detalhes de empresas |
+| **Leads** | `/v1/lead/{id}` | Detalhes de leads |
 | **Imóveis** | `/v1/properties` | Gerenciamento de imóveis |
-| **Contratos** | `/v1/contracts` | Gerenciamento de contratos de venda |
-| **Locações** | `/v1/leases` | Gerenciamento de contratos de locação |
-| **Documentos** | `/v1/documents` | Gerenciamento de documentos |
-| **Usuários** | `/v1/users` | Gerenciamento de usuários/corretores |
-| **Negócios (Deals)** | `/v1/deals` | Gerenciamento de negócios/oportunidades |
-| **Pipelines** | `/v1/pipelines` | Gerenciamento de estágios do funil |
-| **Grupos de Funil** | `/v1/pipeline-groups` | Gerenciamento de grupos de funil |
-| **Contas Financeiras** | `/v1/financial/accounts` | Contas financeiras |
-| **Transações Financeiras** | `/v1/financial/transactions` | Transações financeiras |
-| **Categorias Financeiras** | `/v1/financial/categories` | Categorias financeiras |
+| **Locações** | `/v1/leases` | Contratos de locação |
+| **Contratos** | `/v1/contracts` | Contratos de venda |
 | **Faturas** | `/v1/invoices` | Gerenciamento de faturas |
+| **Negócios (Deals)** | `/v1/deals` | Negócios/oportunidades |
+| **Pipelines** | `/v1/pipelines` | Estágios do funil |
+| **Grupos de Funil** | `/v1/pipeline-groups` | Grupos de funil |
+| **Transações Financeiras** | `/v1/financial-transactions` | Transações financeiras |
 | **Calendário** | `/v1/calendar` | Eventos do calendário |
-| **Integrações** | `/v1/integrations` | Integrações configuradas |
-| **Webhooks** | `/v1/webhooks` | Gerenciamento de webhooks |
-| **Bairros** | `/v1/neighborhoods` | Gerenciamento de bairros |
+| **Usuários** | `/v1/users` | Usuários/corretores |
 | **Tipos de Imóvel** | `/v1/property-types` | Tipos de imóveis |
 
 ## Operações
 
-Cada recurso suporta as seguintes operações:
+### Contato
 
-### Listar (Get All)
-Lista todos os itens do recurso com suporte a:
+| Operação | Descrição | Endpoint |
+|----------|-----------|----------|
+| **Listar** | Lista todos os contatos | `GET /v1/contacts` |
+| **Obter** | Detalhes completos por ID | `GET /v1/person/{id}` ou `/v1/organization/{id}` |
+| **Buscar por Código** | Busca por código | `GET /v1/person/code/{code}` |
+| **Verificar Existência** | Verifica por CPF/Email/Tel/CNPJ | `GET /v1/contact/exists` |
+| **Criar** | Cria pessoa, lead ou organização | `POST /v1/persons` |
+| **Atualizar** | Atualiza contato | `POST /v1/person/{id}` |
+| **Excluir** | Remove contato | `DELETE /v1/person/{id}` |
 
-- **Cursor**: Paginação baseada em cursor
-- **Busca por texto**: Filtro por texto em campos relevantes
-- **Filtros por data**: `start_at` e `end_at`
-- **Limite**: Número máximo de registros
+### Imóvel
 
-**Opções específicas por recurso:**
+| Operação | Descrição | Endpoint |
+|----------|-----------|----------|
+| **Listar** | Lista imóveis com Smart List | `GET /v1/properties` |
+| **Obter** | Detalhes completos por ID | `GET /v1/property/{id}` |
+| **Buscar por Código** | Busca por código | `GET /v1/property/code/{code}` |
+| **Criar** | Cria novo imóvel | `POST /v1/properties` |
+| **Atualizar** | Atualiza imóvel | `POST /v1/property/{id}` |
+| **Excluir** | Remove imóvel | `DELETE /v1/property/{id}` |
 
-| Recurso | Opções Disponíveis |
-|---------|-------------------|
-| **Contatos** | Tipo de contato, tags, origem, gestor, inativos |
-| **Imóveis** | Todos os corretores, smart list, namespace, ordenação, mapa, rede |
-| **Locações** | Proprietário, imóvel, smart list, tipo de busca |
-| **Negócios** | Pipeline group, tipo, status, usuário, imóvel, contato |
-| **Transações** | Conta, status, categoria, subcategoria, ordenação, página |
-| **Calendário** | Ano, mês, dia, usuário, tipo de item, time |
-| **Documentos** | Status, tipo, imóvel, contato |
-| **Contratos** | Smart list, tipo de busca, imóvel |
-| **Faturas** | Conta, locação, contrato, status, método de pagamento |
-| **Usuários** | Email, nome, todos os usuários, busca global |
+### Locação
 
-### Obter (Get)
-Obtém um item específico por ID.
+| Operação | Descrição | Endpoint |
+|----------|-----------|----------|
+| **Listar** | Lista locações com filtros | `GET /v1/leases` |
+| **Obter** | Detalhes completos por ID | `GET /v1/lease/{id}` |
+| **Buscar por Código** | Busca por código | `GET /v1/lease/code/{code}` |
+| **Criar** | Cria nova locação | `POST /v1/leases` |
+| **Atualizar** | Atualiza locação | `POST /v1/lease/{id}` |
 
-### Criar (Create)
-Cria um novo item enviando dados em formato JSON.
+## Auto-Paginação
 
-### Atualizar (Update)
-Atualiza um item existente por ID enviando dados em formato JSON.
+O node suporta auto-paginação para buscar múltiplas páginas automaticamente:
 
-### Excluir (Delete)
-Remove um item por ID.
+| Opção | Descrição |
+|-------|-----------|
+| **50** | 1 página (padrão) |
+| **100** | 2 páginas |
+| **200** | 4 páginas |
+| **500** | 10 páginas |
+| **Todos** | Máximo 1000 registros |
+
+A API do Imobzi limita a 50 registros por requisição. O node faz requisições automáticas usando o cursor até atingir o limite desejado.
+
+## Filtros Disponíveis
+
+### Contatos
+
+| Filtro | Tipo | Opções |
+|--------|------|--------|
+| Tipo de Contato | Dropdown | Pessoa, Organização, Lead |
+| Origem | Dropdown | Facebook, Google, Instagram, Site, WhatsApp, etc. |
+| Tags | Texto | Separadas por vírgula |
+| Gestor | ID | ID do usuário responsável |
+| Inativos | Boolean | Incluir ou não inativos |
+| Data Início/Fim | Data | Filtro por período |
+
+### Imóveis
+
+| Filtro | Tipo | Opções |
+|--------|------|--------|
+| Smart List | Dropdown | 25+ opções (disponíveis, aluguel, venda, etc.) |
+| Finalidade | Dropdown | Residencial, Comercial, Rural |
+| Ordenação | Dropdown | Código, Data, Valor |
+| Todos os Corretores | Boolean | Incluir imóveis de todos |
+
+### Smart List (Imóveis)
+
+```
+all, available, available_reserved, reserved, rent, sale, 
+vacation_rental, site_publish, site_no_publish, without_photos, 
+my_properties, properties_third_party, shared_with_me, 
+shared_with_others, inactives, buildings, with_plaque, 
+out_of_date, new_properties, pending, updated_by_owner, 
+properties_without_owner, exceeding, outdated, updated, 
+without_location, unavailable_properties
+```
 
 ## Webhooks
 
@@ -136,124 +175,111 @@ O node **Imobzi Trigger** permite receber notificações em tempo real sobre eve
 
 | Categoria | Eventos |
 |-----------|---------|
-| **Leads** | `lead_created`, `lead_updated` |
-| **Contatos** | `contact_created`, `contact_updated` |
-| **Imóveis** | `property_created`, `property_updated` |
-| **Negócios** | `deal_created`, `deal_updated`, `deal_moved`, `deal_won`, `deal_lost` |
-| **Locações** | `lease_created`, `lease_updated` |
-| **Contratos** | `contract_created`, `contract_updated` |
-| **Faturas** | `invoice_created`, `invoice_paid`, `invoice_overdue` |
-| **Documentos** | `document_created`, `document_signed` |
-| **Visitas** | `visit_scheduled`, `visit_completed`, `visit_cancelled` |
-| **Tarefas** | `task_created`, `task_completed` |
-| **Usuários** | `user_created` |
-
-### Funcionalidades do Webhook
-
-- **Registro automático**: O webhook pode ser registrado automaticamente na API do Imobzi quando o workflow é ativado
-- **Filtragem de eventos**: Selecione apenas os eventos que deseja receber
-- **Metadados**: Recebe informações completas do evento incluindo timestamp e headers
-
-### Configuração Manual de Webhooks
-
-Para configurar webhooks manualmente na Imobzi:
-
-1. Acesse o painel da Imobzi
-2. Vá para **Configurações** > **Webhooks**
-3. Adicione a URL do webhook gerada pelo n8n
-4. Selecione os eventos que devem acionar o webhook
+| **Contatos** | `contact.created`, `contact.updated` |
+| **Imóveis** | `property.created`, `property.updated` |
+| **Negócios** | `deal.created`, `deal.updated`, `deal.won`, `deal.lost` |
+| **Locações** | `lease.created`, `lease.updated` |
+| **Contratos** | `contract.created`, `contract.updated` |
+| **Faturas** | `invoice.created`, `invoice.paid` |
+| **Visitas** | `visit.scheduled`, `visit.cancelled` |
+| **Tarefas** | `task.created`, `task.updated` |
 
 ## Exemplos
 
-### Exemplo 1: Sincronizar Leads com CRM Externo
-
-```json
-{
-  "resource": "lead",
-  "operation": "getAll",
-  "options": {
-    "cursor": "",
-    "limit": 50
-  }
-}
-```
-
-### Exemplo 2: Criar Novo Contato
+### Exemplo 1: Listar Contatos com Filtro
 
 ```json
 {
   "resource": "contact",
-  "operation": "create",
-  "body": {
-    "name": "João Silva",
-    "email": "joao@email.com",
-    "phone": "+5511999999999",
-    "type": "person"
+  "operation": "getAll",
+  "recordLimit": 100,
+  "contactOptions": {
+    "contact_type": "person",
+    "media_source": "Site"
   }
 }
 ```
 
-### Exemplo 3: Listar Imóveis com Filtros
+### Exemplo 2: Buscar Contato por CPF
+
+```json
+{
+  "resource": "contact",
+  "operation": "checkExists",
+  "checkExistsBy": "cpf",
+  "checkExistsValue": "123.456.789-00"
+}
+```
+
+### Exemplo 3: Buscar Imóvel por Código
+
+```json
+{
+  "resource": "property",
+  "operation": "getByCode",
+  "code": "326"
+}
+```
+
+### Exemplo 4: Listar Imóveis Disponíveis para Venda
 
 ```json
 {
   "resource": "property",
   "operation": "getAll",
+  "recordLimit": 200,
   "propertyOptions": {
-    "all_brokers": true,
-    "show_map": false
+    "smart_list": "sale",
+    "finality": "residential"
   }
 }
 ```
 
-### Exemplo 4: Buscar Transações Financeiras
+### Exemplo 5: Criar Pessoa
 
 ```json
 {
-  "resource": "financialTransaction",
-  "operation": "getAll",
-  "options": {
-    "start_at": "2024-01-01",
-    "end_at": "2024-12-31"
-  },
-  "transactionOptions": {
-    "status": "paid",
-    "sort_by": "due_date",
-    "order_by": "desc"
+  "resource": "contact",
+  "operation": "create",
+  "contactTypeCreate": "person",
+  "body": {
+    "fullname": "João Silva",
+    "email": "joao@email.com",
+    "phones": [
+      {
+        "number": "(11) 99999-9999",
+        "type": "mobile"
+      }
+    ]
   }
 }
 ```
-
-### Exemplo 5: Webhook para Novos Leads
-
-1. Adicione o **Imobzi Trigger** ao workflow
-2. Selecione o evento `lead_created`
-3. Ative o registro automático de webhook
-4. Conecte com os próximos nodes para processar o lead
 
 ## Estrutura de Resposta
 
-### Resposta com Paginação
+### Resposta com Auto-Paginação
 
 ```json
 {
-  "contacts": [...],
-  "cursor": "next_page_cursor",
-  "count": 50,
-  "total": 1234
+  "contact_id": "123456",
+  "name": "João Silva",
+  "email": "joao@email.com",
+  "_pagination": {
+    "total_fetched": 100,
+    "pages_fetched": 2
+  }
 }
 ```
 
-### Metadados Incluídos
-
-Cada item retornado inclui metadados de paginação:
+### Resposta Simples
 
 ```json
 {
+  "contact_id": "123456",
+  "name": "João Silva",
   "_metadata": {
     "cursor": "next_page_cursor",
-    "count": 50,
-    "total": 1234
+    "count": 50
   }
 }
 ```
@@ -264,31 +290,40 @@ Cada item retornado inclui metadados de paginação:
 - **Node.js**: >=20.15
 - **Plano Imobzi**: CRM Business ou Gestão de Locação Real Estate
 - **API Version**: v1
+- **Node Version**: 5
 
 ## Links Úteis
 
 * [Documentação da comunidade n8n](https://docs.n8n.io/integrations/#community-nodes)
 * [Documentação da API Imobzi](https://developer.imobzi.com/)
 * [Como funciona a chave de API](https://help.imobzi.com/pt-br/article/como-funciona-a-chave-de-api-1nieky8/)
-* [Como utilizar a API para integrar com aplicativos externos](https://help.imobzi.com/pt-br/article/como-utilizar-a-api-para-integrar-com-aplicativos-externos-n4fbe7/)
-* [Como criar e usar webhooks na Imobzi](https://www.imobzi.com/docs/primeiros-passos/integracoes-e-automacoes/como-criar-e-usar-webhooks-na-imobzi/)
 * [Repositório GitHub](https://github.com/redeuno/n8n-nodes-imobzi-latest)
 
 ## Histórico de Versões
 
+### v1.2.0 (Dezembro 2024) - Atual
+- ✅ **Auto-paginação**: 50, 100, 200, 500, Todos (máx 1000)
+- ✅ **Busca por código**: Pessoa, Lead, Organização, Imóvel, Locação
+- ✅ **Verificar existência**: CPF, Email, Telefone, CNPJ
+- ✅ **Operações separadas por tipo**: Contato com tipo (Pessoa/Org/Lead)
+- ✅ **Campos de data nativos**: dateTime do n8n
+- ✅ **Dropdowns pré-definidos**: Em todos os filtros
+- ✅ **typeVersion: 5**
+
+### v1.1.0 (Dezembro 2024)
+- ✅ URL base corrigida para `https://api.imobzi.app`
+- ✅ Autenticação com header `X-Imobzi-Secret`
+- ✅ Calendário com year/month obrigatórios
+- ✅ Limite máximo de 50 por requisição
+- ✅ Dropdowns básicos
+
 ### v1.0.0 (Dezembro 2024)
-- ✅ **URL base corrigida** para `https://api.imobzi.app`
-- ✅ **Autenticação corrigida** para usar header `X-Imobzi-Secret`
-- ✅ **21 recursos** implementados com endpoints corretos
-- ✅ **Opções específicas por recurso** para filtros avançados
-- ✅ **Webhook Trigger** com registro automático e 25+ eventos
-- ✅ **Metadados de paginação** incluídos nas respostas
-- ✅ **Node versão 3** com melhorias de UX
-- ✅ Todos os erros de linting corrigidos
+- Versão inicial com recursos básicos
 
 ---
 
 **Criado por**: Bruno Mantovani  
+**Email**: bruno@redeuno.com.br  
 **GitHub**: [redeuno/n8n-nodes-imobzi-latest](https://github.com/redeuno/n8n-nodes-imobzi-latest)  
-**Versão**: 1.0.0  
+**Versão**: 1.2.0  
 **Última atualização**: Dezembro 2024
