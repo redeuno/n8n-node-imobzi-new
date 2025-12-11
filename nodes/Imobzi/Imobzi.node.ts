@@ -38,7 +38,7 @@ const resourceConfig: { [resource: string]: ResourceConfig } = {
 	lease: {
 		endpoint: '/v1/leases',
 		singularEndpoint: '/v1/lease',
-		codeEndpoint: '/v1/lease/code',
+		// codeEndpoint NÃO funciona - erro 500
 		dataKey: 'leases',
 		paginationType: 'cursor',
 	},
@@ -211,7 +211,6 @@ export class Imobzi implements INodeType {
 					},
 				},
 				options: [
-					{ name: 'Buscar Por Código', value: 'getByCode', action: 'Buscar loca o por c digo' },
 					{ name: 'Get Many', value: 'getAll', action: 'Listar loca es' },
 					{ name: 'Obter Por ID', value: 'get', action: 'Obter loca o por id' },
 				],
@@ -351,7 +350,22 @@ export class Imobzi implements INodeType {
 				description: 'Código do registro',
 				displayOptions: {
 					show: {
-						operation: ['getByCode', 'checkPropertyExists'],
+						resource: ['contact', 'property'],
+						operation: ['getByCode'],
+					},
+				},
+			},
+			{
+				displayName: 'Código Do Imóvel',
+				name: 'propertyCode',
+				type: 'string',
+				required: true,
+				default: '',
+				description: 'Código do imóvel para verificar existência',
+				displayOptions: {
+					show: {
+						resource: ['property'],
+						operation: ['checkPropertyExists'],
 					},
 				},
 			},
@@ -890,7 +904,7 @@ export class Imobzi implements INodeType {
 					// ==================== CHECK PROPERTY EXISTS ====================
 					case 'checkPropertyExists': {
 						endpoint = '/v1/property/exists';
-						const propCode = this.getNodeParameter('code', itemIndex) as string;
+						const propCode = this.getNodeParameter('propertyCode', itemIndex) as string;
 						qs.code = propCode;
 						break;
 					}
@@ -901,8 +915,8 @@ export class Imobzi implements INodeType {
 						if (resource === 'contact') {
 							const contactType = this.getNodeParameter('contactType', itemIndex) as string;
 							endpoint = `/v1/${contactType}/code/${code}`;
-						} else if (config.codeEndpoint) {
-							endpoint = `${config.codeEndpoint}/${code}`;
+						} else if (resource === 'property') {
+							endpoint = `/v1/property/code/${code}`;
 						} else {
 							throw new NodeOperationError(this.getNode(), `Busca por código não disponível para "${resource}"`, { itemIndex });
 						}
