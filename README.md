@@ -188,14 +188,17 @@ Eventos suportados:
 - Locações/Pipelines: NUMBER
 - Faturas: STRING UUID
 
-### Correções v2.3.0
-- ✅ Removido sanitização de CPF/CNPJ (API aceita COM formatação)
-- ✅ Filtros de data em faturas: `start_at` e `end_at`
-- ✅ Status de fatura corrigido: `cancelled` → `canceled`
-- ✅ Novas opções de status: partially_paid, expired, deleted, all
-- ✅ Filtro de método de pagamento adicionado
+### Novidades v2.4.0
+- ✅ **Período pré-definido em faturas**: 15, 30, 60, 90 dias + personalizado
+- ✅ **Dropdown de Origem** em contatos (OLX, Site, Facebook, etc.)
+- ✅ **Dropdown de Tags** em contatos
+- ✅ Cálculo automático de datas baseado no período selecionado
+
+### Correções anteriores
+- ✅ CPF/CNPJ aceita formatação (com pontos e traços)
+- ✅ Status de fatura corrigido
+- ✅ Método de pagamento em faturas
 - ✅ Descrições explicativas nos campos de ID
-- ✅ Avisos sobre limitações da API
 
 ### Roadmap
 - **Fase 6 (v3.0.0):** CRUD Completo - Criar, Atualizar e Excluir para todos os recursos
@@ -218,6 +221,6 @@ MIT © Bruno Mantovani
 
 ---
 
-**Versão:** 2.3.0  
+**Versão:** 2.4.0  
 **Última atualização:** Dezembro 2024  
 **Testado com:** API Imobzi (101 endpoints testados)

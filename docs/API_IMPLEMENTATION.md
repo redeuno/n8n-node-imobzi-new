@@ -599,6 +599,12 @@ Para suporte do node n8n:
 
 ## Changelog
 
+### v2.4.0 (Dezembro 2024)
+- ✅ Período pré-definido em faturas (15, 30, 60, 90 dias + personalizado)
+- ✅ Dropdown de Origem em contatos
+- ✅ Dropdown de Tags em contatos
+- ✅ Cálculo automático de datas
+
 ### v2.3.0 (Dezembro 2024)
 - ✅ Removido sanitização de CPF/CNPJ (API aceita COM formatação)
 - ✅ Filtros de data em faturas: `start_at` e `end_at`
@@ -626,5 +632,5 @@ Para suporte do node n8n:
 ---
 
 **Criado por**: Bruno Mantovani  
-**Versão**: 2.3.0  
+**Versão**: 2.4.0  
 **Última atualização**: Dezembro 2024

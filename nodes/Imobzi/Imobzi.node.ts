@@ -9,15 +9,15 @@ import type {
 import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
 
 /**
- * n8n-nodes-imobzi-latest v2.3.0
+ * n8n-nodes-imobzi-latest v2.4.0
  * Configuração dos recursos da API Imobzi
  * Baseado em 101 testes reais - 11/12/2025
  *
- * Correções v2.3.0:
- * - Removido sanitização CPF/CNPJ (API aceita COM formatação)
- * - Adicionado filtros de data em faturas (start_at, end_at)
- * - Descrições explicativas nos campos de ID
- * - Aviso sobre limitações conhecidas da API
+ * Correções v2.4.0:
+ * - Período pré-definido em faturas (15, 30, 60, 90 dias + personalizado)
+ * - Dropdown de Origem (media_source) em contatos
+ * - Dropdown de Tags em contatos
+ * - Dropdowns ordenados alfabeticamente
  */
 interface ResourceConfig {
 	endpoint: string;
@@ -489,9 +489,32 @@ export class Imobzi implements INodeType {
 					{
 						displayName: 'Origem',
 						name: 'media_source',
-						type: 'string',
+						type: 'options',
 						default: '',
-						description: 'Origem do contato (ex: OLX, Site, Facebook). Use "Origem > Get Many" para listar opções.',
+						options: [
+							{ name: 'Amigos E Parentes', value: 'Amigos e Parentes' },
+							{ name: 'Avaliador', value: 'Avaliador' },
+							{ name: 'By Brokers', value: 'By Brokers' },
+							{ name: 'ChavesNaMão', value: 'ChavesNaMão' },
+							{ name: 'Facebook', value: 'Facebook' },
+							{ name: 'Google', value: 'Google' },
+							{ name: 'ImovelWeb', value: 'ImovelWeb' },
+							{ name: 'Instagram', value: 'Instagram' },
+							{ name: 'Linkedin', value: 'Linkedin' },
+							{ name: 'Nenhum', value: 'Nenhum' },
+							{ name: 'OLX', value: 'OLX' },
+							{ name: 'Outros', value: 'Outros' },
+							{ name: 'Placa', value: 'Placa' },
+							{ name: 'Portais', value: 'Portais' },
+							{ name: 'Prospecção', value: 'Prospecção' },
+							{ name: 'Site', value: 'Site' },
+							{ name: 'Telefone', value: 'Telefone' },
+							{ name: 'Todos', value: '' },
+							{ name: 'VivaReal', value: 'VivaReal' },
+							{ name: 'WhatsApp', value: 'WhatsApp' },
+							{ name: 'ZAP Imóveis', value: 'ZAP Imóveis' },
+						],
+						description: 'Origem do contato',
 					},
 					{
 						displayName: 'Smart List',
@@ -516,9 +539,30 @@ export class Imobzi implements INodeType {
 					{
 						displayName: 'Tags',
 						name: 'tags',
-						type: 'string',
+						type: 'options',
 						default: '',
-						description: 'Ex: contact, owner',
+						options: [
+							{ name: '1 Quarto', value: '1 Quarto' },
+							{ name: '2 Quartos', value: '2 Quartos' },
+							{ name: '3 Quartos', value: '3 Quartos' },
+							{ name: '4+ Quartos', value: '4+ Quartos' },
+							{ name: 'Apartamento', value: 'Apartamento' },
+							{ name: 'Casa', value: 'Casa' },
+							{ name: 'Comprador', value: 'Comprador' },
+							{ name: 'Contact', value: 'contact' },
+							{ name: 'Fiador', value: 'Fiador' },
+							{ name: 'Inquilino', value: 'Inquilino' },
+							{ name: 'Investidor', value: 'Investidor' },
+							{ name: 'Locação', value: 'Locação' },
+							{ name: 'Locatário', value: 'Locatário' },
+							{ name: 'Owner', value: 'owner' },
+							{ name: 'Proprietário', value: 'Proprietário' },
+							{ name: 'Terreno', value: 'Terreno' },
+							{ name: 'Todos', value: '' },
+							{ name: 'Venda', value: 'Venda' },
+							{ name: 'VIP', value: 'VIP' },
+						],
+						description: 'Tag do contato. Use "Tag de Contato > Get Many" para ver todas as opções.',
 					},
 					{
 						displayName: 'Tipo De Contato',
@@ -649,18 +693,18 @@ export class Imobzi implements INodeType {
 				},
 				options: [
 					{
-						displayName: 'Data Fim',
+						displayName: 'Data Fim (Personalizado)',
 						name: 'end_at',
 						type: 'dateTime',
 						default: '',
-						description: 'Filtrar faturas até esta data (YYYY-MM-DD)',
+						description: 'Data final (apenas se período = Personalizado)',
 					},
 					{
-						displayName: 'Data Início',
+						displayName: 'Data Início (Personalizado)',
 						name: 'start_at',
 						type: 'dateTime',
 						default: '',
-						description: 'Filtrar faturas a partir desta data (YYYY-MM-DD)',
+						description: 'Data inicial (apenas se período = Personalizado)',
 					},
 					{
 						displayName: 'Método De Pagamento',
@@ -674,6 +718,21 @@ export class Imobzi implements INodeType {
 							{ name: 'Todos', value: '' },
 						],
 						description: 'Filtrar por método de pagamento',
+					},
+					{
+						displayName: 'Período',
+						name: 'periodo',
+						type: 'options',
+						default: '',
+						options: [
+							{ name: '15 Dias Atrás', value: '15' },
+							{ name: '30 Dias Atrás', value: '30' },
+							{ name: '60 Dias Atrás', value: '60' },
+							{ name: '90 Dias Atrás', value: '90' },
+							{ name: 'Personalizado', value: 'custom' },
+							{ name: 'Todos', value: '' },
+						],
+						description: 'Período para buscar faturas',
 					},
 					{
 						displayName: 'Status',
@@ -938,8 +997,41 @@ export class Imobzi implements INodeType {
 						const filtersKey = filtersMap[resource];
 						if (filtersKey) {
 							const filters = this.getNodeParameter(filtersKey, itemIndex, {}) as IDataObject;
+							
+							// Processar período de faturas
+							if (resource === 'invoice' && filters.periodo) {
+								const hoje = new Date();
+								const hojeStr = hoje.toISOString().split('T')[0];
+								
+								if (filters.periodo === 'custom') {
+									// Usar datas personalizadas
+									if (filters.start_at) {
+										const startDate = new Date(filters.start_at as string);
+										if (!isNaN(startDate.getTime())) {
+											qs.start_at = startDate.toISOString().split('T')[0];
+										}
+									}
+									if (filters.end_at) {
+										const endDate = new Date(filters.end_at as string);
+										if (!isNaN(endDate.getTime())) {
+											qs.end_at = endDate.toISOString().split('T')[0];
+										}
+									}
+								} else if (filters.periodo !== '') {
+									// Calcular período automático
+									const dias = parseInt(filters.periodo as string, 10);
+									const dataInicio = new Date(hoje.getTime() - dias * 24 * 60 * 60 * 1000);
+									qs.start_at = dataInicio.toISOString().split('T')[0];
+									qs.end_at = hojeStr;
+								}
+								// Remover campos de período do qs
+								delete filters.periodo;
+								delete filters.start_at;
+								delete filters.end_at;
+							}
+							
 							for (const [key, value] of Object.entries(filters)) {
-								if (value !== '' && value !== undefined && value !== null) {
+								if (value !== '' && value !== undefined && value !== null && key !== 'periodo') {
 									// Formatar datas para YYYY-MM-DD
 									if ((key === 'start_at' || key === 'end_at') && typeof value === 'string') {
 										const date = new Date(value);

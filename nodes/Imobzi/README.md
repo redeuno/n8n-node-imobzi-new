@@ -2,16 +2,16 @@
 
 Integração completa com a API da Imobzi - Plataforma de Gestão Imobiliária.
 
-## Versão 2.3.0
+## Versão 2.4.0
 
 ### Novidades
-- ✅ Removido sanitização de CPF/CNPJ (API aceita COM formatação)
-- ✅ Filtros de data em faturas: `start_at` e `end_at`
-- ✅ Status de fatura corrigido: `cancelled` → `canceled`
-- ✅ Novas opções de status: partially_paid, expired, deleted, all
-- ✅ Filtro de método de pagamento adicionado
-- ✅ Descrições explicativas nos campos de ID
-- ✅ Avisos sobre limitações da API
+- ✅ **Período pré-definido em faturas**: 15, 30, 60, 90 dias + personalizado
+- ✅ **Dropdown de Origem** em contatos (OLX, Site, Facebook, WhatsApp, etc.)
+- ✅ **Dropdown de Tags** em contatos (Comprador, Inquilino, Proprietário, etc.)
+- ✅ Cálculo automático de datas baseado no período selecionado
+- ✅ CPF/CNPJ aceita formatação (com pontos e traços)
+- ✅ Status de fatura corrigido
+- ✅ Método de pagamento em faturas
 
 ### Roadmap
 - **Fase 6 (v3.0.0):** CRUD Completo - Criar, Atualizar e Excluir
@@ -193,5 +193,5 @@ Para suporte técnico:
 ---
 
 **Criado por**: Bruno Mantovani  
-**Versão**: 2.3.0  
+**Versão**: 2.4.0  
 **Última atualização**: Dezembro 2024
