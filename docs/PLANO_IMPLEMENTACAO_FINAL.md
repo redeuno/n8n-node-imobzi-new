@@ -408,6 +408,32 @@ async function paginateWithNextPage(endpoint, params, recordLimit) {
 
 ---
 
+### FASE 6 - CRUD Completo (v3.0.0)
+**Objetivo:** Operações completas de criar, atualizar e excluir
+
+| Recurso | Create | Update | Delete | Endpoints |
+|---------|--------|--------|--------|-----------|
+| **Contact** | ✅ | ✅ | ✅ | POST /v1/persons, /v1/leads, /v1/organizations |
+| **Property** | ✅ | ✅ | ✅ | POST /v1/properties |
+| **Lease** | ✅ | ✅ | ❌ | POST /v1/leases |
+| **Invoice** | ✅ | ✅ | ❌ | POST /v1/invoices |
+| **Deal** | ✅ | ✅ | ✅ | POST /v1/deals |
+| **Calendar** | ✅ | ✅ | ✅ | POST /v1/calendar |
+| **Document** | ✅ | ✅ | ✅ | POST /v1/documents |
+
+**Operações a implementar:**
+- `create` - Criar novo registro (POST)
+- `update` - Atualizar registro existente (POST ou PATCH)
+- `delete` - Excluir registro (DELETE)
+
+**Campos dinâmicos por recurso:**
+- Contact: fullname, email, phones, cpf/cnpj, tags, media_source
+- Property: address, type, finality, value, photos, features
+- Deal: title, value, contact_id, property_id, stage_id, user_id
+- Calendar: title, start_at, end_at, item_type, contact_id, property_id
+
+---
+
 ## 📝 CHECKLIST TÉCNICO FASE 1
 
 ### Correções Obrigatórias

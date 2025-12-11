@@ -9,13 +9,13 @@ import type {
 import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
 
 /**
- * n8n-nodes-imobzi-latest v2.2.0
+ * n8n-nodes-imobzi-latest v2.3.0
  * Configuração dos recursos da API Imobzi
  * Baseado em 101 testes reais - 11/12/2025
  *
- * Correções v2.2.0:
- * - Status fatura: cancelled → canceled + novas opções
- * - Sanitização automática de CPF/CNPJ/Telefone
+ * Correções v2.3.0:
+ * - Removido sanitização CPF/CNPJ (API aceita COM formatação)
+ * - Adicionado filtros de data em faturas (start_at, end_at)
  * - Descrições explicativas nos campos de ID
  * - Aviso sobre limitações conhecidas da API
  */
@@ -649,6 +649,20 @@ export class Imobzi implements INodeType {
 				},
 				options: [
 					{
+						displayName: 'Data Fim',
+						name: 'end_at',
+						type: 'dateTime',
+						default: '',
+						description: 'Filtrar faturas até esta data (YYYY-MM-DD)',
+					},
+					{
+						displayName: 'Data Início',
+						name: 'start_at',
+						type: 'dateTime',
+						default: '',
+						description: 'Filtrar faturas a partir desta data (YYYY-MM-DD)',
+					},
+					{
 						displayName: 'Método De Pagamento',
 						name: 'payment_method',
 						type: 'options',
@@ -845,13 +859,8 @@ export class Imobzi implements INodeType {
 				case 'checkExists': {
 					endpoint = '/v1/contact/exists';
 					const checkBy = this.getNodeParameter('checkExistsBy', itemIndex) as string;
-					let checkValue = this.getNodeParameter('checkExistsValue', itemIndex) as string;
-
-					// Sanitizar CPF/CNPJ/Telefone - remover pontos, traços, parênteses, espaços
-					if (['cpf', 'cnpj', 'phone_number'].includes(checkBy)) {
-						checkValue = checkValue.replace(/[\s.()\-/]/g, '');
-					}
-
+					const checkValue = this.getNodeParameter('checkExistsValue', itemIndex) as string;
+					// API aceita CPF/CNPJ COM formatação (pontos, traços)
 					qs[checkBy] = checkValue;
 					break;
 				}
@@ -931,7 +940,17 @@ export class Imobzi implements INodeType {
 							const filters = this.getNodeParameter(filtersKey, itemIndex, {}) as IDataObject;
 							for (const [key, value] of Object.entries(filters)) {
 								if (value !== '' && value !== undefined && value !== null) {
-									qs[key] = value;
+									// Formatar datas para YYYY-MM-DD
+									if ((key === 'start_at' || key === 'end_at') && typeof value === 'string') {
+										const date = new Date(value);
+										if (!isNaN(date.getTime())) {
+											qs[key] = date.toISOString().split('T')[0];
+										} else {
+											qs[key] = value;
+										}
+									} else {
+										qs[key] = value;
+									}
 								}
 							}
 						}

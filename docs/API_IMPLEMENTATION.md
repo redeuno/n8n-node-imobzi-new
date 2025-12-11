@@ -599,11 +599,14 @@ Para suporte do node n8n:
 
 ## Changelog
 
+### v2.3.0 (Dezembro 2024)
+- ✅ Removido sanitização de CPF/CNPJ (API aceita COM formatação)
+- ✅ Filtros de data em faturas: `start_at` e `end_at`
+
 ### v2.2.0 (Dezembro 2024)
 - ✅ Status de fatura corrigido: `cancelled` → `canceled`
 - ✅ Novas opções de status de fatura: partially_paid, expired, deleted, all
 - ✅ Filtro de método de pagamento adicionado
-- ✅ Sanitização automática de CPF/CNPJ/Telefone
 - ✅ Descrições explicativas nos campos de ID
 - ✅ Avisos sobre limitações da API
 
@@ -613,9 +616,15 @@ Para suporte do node n8n:
 - `contact_type` - A API pode ignorar este filtro
 - `finality` - A API pode ignorar este filtro
 - `/v1/property/exists` - Pode retornar resultados incorretos
+- `show_activities` - Não retorna atividades mesmo quando true
+
+### Roadmap
+
+**Fase 6 (v3.0.0) - CRUD Completo:**
+- Create, Update e Delete para Contact, Property, Lease, Invoice, Deal, Calendar, Document
 
 ---
 
 **Criado por**: Bruno Mantovani  
-**Versão**: 2.2.0  
+**Versão**: 2.3.0  
 **Última atualização**: Dezembro 2024
