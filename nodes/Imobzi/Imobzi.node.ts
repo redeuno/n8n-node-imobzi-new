@@ -12,7 +12,7 @@ import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
  * n8n-nodes-imobzi-latest v2.2.0
  * Configuração dos recursos da API Imobzi
  * Baseado em 101 testes reais - 11/12/2025
- * 
+ *
  * Correções v2.2.0:
  * - Status fatura: cancelled → canceled + novas opções
  * - Sanitização automática de CPF/CNPJ/Telefone
@@ -484,14 +484,14 @@ export class Imobzi implements INodeType {
 						name: 'user_id',
 						type: 'string',
 						default: '',
-						description: 'ID do usuário responsável. Use "Usuário > Get Many" para listar IDs',
+						description: 'ID do usuário responsável. Use "Usuário > Get Many" para listar IDs.',
 					},
 					{
 						displayName: 'Origem',
 						name: 'media_source',
 						type: 'string',
 						default: '',
-						description: 'Origem do contato (ex: OLX, Site, Facebook). Use "Origem > Get Many" para listar opções',
+						description: 'Origem do contato (ex: OLX, Site, Facebook). Use "Origem > Get Many" para listar opções.',
 					},
 					{
 						displayName: 'Smart List',
@@ -568,7 +568,7 @@ export class Imobzi implements INodeType {
 						name: 'user_id',
 						type: 'string',
 						default: '',
-						description: 'ID do corretor. Use "Usuário > Get Many" para listar IDs',
+						description: 'ID do corretor. Use "Usuário > Get Many" para listar IDs.',
 					},
 					{
 						displayName: 'Smart List',
@@ -665,7 +665,7 @@ export class Imobzi implements INodeType {
 						displayName: 'Status',
 						name: 'status',
 						type: 'options',
-						default: '',
+						default: 'all',
 						options: [
 							{ name: 'Atrasado', value: 'overdue' },
 							{ name: 'Cancelado', value: 'canceled' },
@@ -700,21 +700,21 @@ export class Imobzi implements INodeType {
 						name: 'pipeline_id',
 						type: 'string',
 						default: '',
-						description: 'ID do estágio. Use "Estágio > Get Many" para listar IDs (ex: 4584666827849728)',
+						description: 'ID do estágio. Use "Estágio > Get Many" para listar IDs (ex: 4584666827849728).',
 					},
 					{
 						displayName: 'ID Do Usuário',
 						name: 'user_id',
 						type: 'string',
 						default: '',
-						description: 'ID do corretor responsável. Use "Usuário > Get Many" para listar IDs',
+						description: 'ID do corretor responsável. Use "Usuário > Get Many" para listar IDs.',
 					},
 					{
 						displayName: 'Mostrar Atividades',
 						name: 'show_activities',
 						type: 'boolean',
 						default: false,
-						description: 'Incluir atividades do deal na resposta',
+						description: 'Whether to include deal activities in the response',
 					},
 					{
 						displayName: 'Status',
@@ -754,14 +754,14 @@ export class Imobzi implements INodeType {
 						name: 'pipeline_group_id',
 						type: 'string',
 						default: '',
-						description: 'ID do grupo de funil. Use "Grupo de Funil > Get Many" para listar IDs (ex: 5675099632959488)',
+						description: 'ID do grupo de funil. Use "Grupo de Funil > Get Many" para listar IDs (ex: 5675099632959488).',
 					},
 					{
 						displayName: 'ID Do Usuário',
 						name: 'user_id',
 						type: 'string',
 						default: '',
-						description: 'ID do corretor. Use "Usuário > Get Many" para listar IDs',
+						description: 'ID do corretor. Use "Usuário > Get Many" para listar IDs.',
 					},
 				],
 			},
@@ -785,7 +785,7 @@ export class Imobzi implements INodeType {
 						name: 'user_id',
 						type: 'string',
 						default: '',
-						description: 'Filtrar por usuário. Use "Usuário > Get Many" para listar IDs',
+						description: 'Filtrar por usuário. Use "Usuário > Get Many" para listar IDs.',
 					},
 					{
 						displayName: 'Tipo De Item',
@@ -846,12 +846,12 @@ export class Imobzi implements INodeType {
 					endpoint = '/v1/contact/exists';
 					const checkBy = this.getNodeParameter('checkExistsBy', itemIndex) as string;
 					let checkValue = this.getNodeParameter('checkExistsValue', itemIndex) as string;
-					
+
 					// Sanitizar CPF/CNPJ/Telefone - remover pontos, traços, parênteses, espaços
 					if (['cpf', 'cnpj', 'phone_number'].includes(checkBy)) {
 						checkValue = checkValue.replace(/[\s.()\-/]/g, '');
 					}
-					
+
 					qs[checkBy] = checkValue;
 					break;
 				}
@@ -945,7 +945,7 @@ export class Imobzi implements INodeType {
 				}
 
 				// ==================== EXECUTE REQUEST ====================
-				
+
 				// Operações simples (não getAll)
 				if (operation !== 'getAll') {
 					const response = await this.helpers.requestWithAuthentication.call(
@@ -1074,7 +1074,7 @@ export class Imobzi implements INodeType {
 
 					// Extrair dados - pode ser array direto ou ter dataKey
 					let data: IDataObject[] = [];
-					
+
 					if (config.dataKey && response[config.dataKey]) {
 						// Tem dataKey (tags, deals_lost_reasons, calendar_items, etc)
 						data = response[config.dataKey] as IDataObject[];
