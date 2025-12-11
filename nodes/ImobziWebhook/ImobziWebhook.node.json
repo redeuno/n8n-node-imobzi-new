@@ -1,0 +1,22 @@
+{
+	"node": "n8n-nodes-imobzi.imobziWebhook",
+	"nodeVersion": "2.0",
+	"codexVersion": "1.0",
+	"categories": ["Sales", "CRM"],
+	"resources": {
+		"primaryDocumentation": [
+			{
+				"url": "https://developer.imobzi.com/"
+			}
+		],
+		"credentialDocumentation": [
+			{
+				"url": "https://help.imobzi.com/pt-br/article/como-funciona-a-chave-de-api-1nieky8/"
+			}
+		]
+	},
+	"alias": ["imobzi", "webhook", "trigger", "real estate", "imobiliaria"],
+	"subcategories": {
+		"Sales": ["CRM", "Lead Management"]
+	}
+}

@@ -1,0 +1,247 @@
+{
+  "name": "Imobzi Integration Examples",
+  "nodes": [
+    {
+      "parameters": {
+        "events": ["lead_created", "contact_created"],
+        "options": {
+          "autoRegister": true,
+          "webhookName": "n8n Lead Automation"
+        }
+      },
+      "id": "webhook-trigger",
+      "name": "Imobzi Trigger",
+      "type": "n8n-nodes-imobzi.imobziWebhook",
+      "typeVersion": 2,
+      "position": [240, 300],
+      "credentials": {
+        "imobziApi": {
+          "id": "1",
+          "name": "Imobzi API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "getAll",
+        "options": {
+          "limit": 50
+        },
+        "contactOptions": {
+          "contact_type": "person"
+        }
+      },
+      "id": "list-contacts",
+      "name": "Listar Contatos",
+      "type": "n8n-nodes-imobzi.imobzi",
+      "typeVersion": 3,
+      "position": [460, 200],
+      "credentials": {
+        "imobziApi": {
+          "id": "1",
+          "name": "Imobzi API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "property",
+        "operation": "getAll",
+        "options": {
+          "limit": 100
+        },
+        "propertyOptions": {
+          "all_brokers": true,
+          "show_map": false
+        }
+      },
+      "id": "list-properties",
+      "name": "Listar Imóveis",
+      "type": "n8n-nodes-imobzi.imobzi",
+      "typeVersion": 3,
+      "position": [460, 400],
+      "credentials": {
+        "imobziApi": {
+          "id": "1",
+          "name": "Imobzi API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "lead",
+        "operation": "create",
+        "body": "{\n  \"fullname\": \"{{ $json.data.name }}\",\n  \"email\": \"{{ $json.data.email }}\",\n  \"phones\": [\n    {\n      \"number\": \"{{ $json.data.phone }}\",\n      \"type\": \"mobile\"\n    }\n  ],\n  \"media_source\": \"n8n Automation\"\n}"
+      },
+      "id": "create-lead",
+      "name": "Criar Lead",
+      "type": "n8n-nodes-imobzi.imobzi",
+      "typeVersion": 3,
+      "position": [680, 300],
+      "credentials": {
+        "imobziApi": {
+          "id": "1",
+          "name": "Imobzi API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "property",
+        "operation": "get",
+        "id": "={{ $json.property_id }}"
+      },
+      "id": "get-property",
+      "name": "Obter Imóvel",
+      "type": "n8n-nodes-imobzi.imobzi",
+      "typeVersion": 3,
+      "position": [900, 300],
+      "credentials": {
+        "imobziApi": {
+          "id": "1",
+          "name": "Imobzi API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "financialTransaction",
+        "operation": "getAll",
+        "options": {
+          "start_at": "2024-01-01",
+          "end_at": "2024-12-31",
+          "limit": 100
+        },
+        "transactionOptions": {
+          "status": "paid",
+          "order_by": "desc"
+        }
+      },
+      "id": "list-transactions",
+      "name": "Listar Transações",
+      "type": "n8n-nodes-imobzi.imobzi",
+      "typeVersion": 3,
+      "position": [460, 600],
+      "credentials": {
+        "imobziApi": {
+          "id": "1",
+          "name": "Imobzi API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "lease",
+        "operation": "getAll",
+        "options": {
+          "limit": 50
+        },
+        "leaseOptions": {
+          "smart_list": "active"
+        }
+      },
+      "id": "list-leases",
+      "name": "Listar Locações",
+      "type": "n8n-nodes-imobzi.imobzi",
+      "typeVersion": 3,
+      "position": [460, 800],
+      "credentials": {
+        "imobziApi": {
+          "id": "1",
+          "name": "Imobzi API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "deal",
+        "operation": "getAll",
+        "dealOptions": {
+          "deal_status": "open"
+        }
+      },
+      "id": "list-deals",
+      "name": "Listar Negócios",
+      "type": "n8n-nodes-imobzi.imobzi",
+      "typeVersion": 3,
+      "position": [460, 1000],
+      "credentials": {
+        "imobziApi": {
+          "id": "1",
+          "name": "Imobzi API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "calendar",
+        "operation": "create",
+        "body": "{\n  \"title\": \"Visita ao Imóvel\",\n  \"description\": \"Visita agendada via n8n\",\n  \"start_at\": \"2025-01-15T10:00:00\",\n  \"end_at\": \"2025-01-15T11:00:00\",\n  \"item_type\": \"visit\"\n}"
+      },
+      "id": "create-calendar-event",
+      "name": "Criar Evento",
+      "type": "n8n-nodes-imobzi.imobzi",
+      "typeVersion": 3,
+      "position": [680, 500],
+      "credentials": {
+        "imobziApi": {
+          "id": "1",
+          "name": "Imobzi API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "contact",
+        "operation": "update",
+        "id": "={{ $json.db_id }}",
+        "body": "{\n  \"tags\": [\"vip\", \"priority\"]\n}"
+      },
+      "id": "update-contact",
+      "name": "Atualizar Contato",
+      "type": "n8n-nodes-imobzi.imobzi",
+      "typeVersion": 3,
+      "position": [900, 500],
+      "credentials": {
+        "imobziApi": {
+          "id": "1",
+          "name": "Imobzi API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Imobzi Trigger": {
+      "main": [
+        [
+          {
+            "node": "Criar Lead",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Criar Lead": {
+      "main": [
+        [
+          {
+            "node": "Obter Imóvel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "pinData": {},
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "tags": ["imobzi", "real-estate", "crm"],
+  "triggerCount": 1,
+  "updatedAt": "2024-12-10T00:00:00.000Z",
+  "versionId": "2"
+}

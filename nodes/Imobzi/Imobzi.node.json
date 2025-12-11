@@ -1,0 +1,23 @@
+{
+	"node": "n8n-nodes-imobzi.imobzi",
+	"nodeVersion": "3.0",
+	"codexVersion": "1.0",
+	"categories": ["Sales", "CRM", "Finance"],
+	"resources": {
+		"primaryDocumentation": [
+			{
+				"url": "https://developer.imobzi.com/"
+			}
+		],
+		"credentialDocumentation": [
+			{
+				"url": "https://help.imobzi.com/pt-br/article/como-funciona-a-chave-de-api-1nieky8/"
+			}
+		]
+	},
+	"alias": ["imobzi", "imobiliaria", "real estate", "crm", "imovel", "locacao", "aluguel"],
+	"subcategories": {
+		"Sales": ["CRM", "Lead Management"],
+		"Finance": ["Invoicing", "Property Management"]
+	}
+}
