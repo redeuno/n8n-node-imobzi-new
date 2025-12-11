@@ -18,15 +18,15 @@ if ! command -v n8n &> /dev/null; then
     npm install -g n8n
 fi
 
-# Instalar o pacote n8n-node-imobzi-latest
-echo "📦 Instalando n8n-node-imobzi-latest..."
-npm install -g n8n-node-imobzi-latest
+# Instalar o pacote n8n-nodes-imobzi-latest
+echo "📦 Instalando n8n-nodes-imobzi-latest..."
+npm install -g n8n-nodes-imobzi-latest
 
 # Verificar se a instalação foi bem-sucedida
-if npm list -g n8n-node-imobzi-latest &> /dev/null; then
-    echo "✅ n8n-node-imobzi-latest instalado com sucesso!"
+if npm list -g n8n-nodes-imobzi-latest &> /dev/null; then
+    echo "✅ n8n-nodes-imobzi-latest instalado com sucesso!"
 else
-    echo "❌ Erro na instalação do n8n-node-imobzi-latest"
+    echo "❌ Erro na instalação do n8n-nodes-imobzi-latest"
     exit 1
 fi
 
@@ -57,8 +57,8 @@ echo "3. Adicione as credenciais da Imobzi API"
 echo "4. Procure pelos nodes 'Imobzi' e 'Imobzi Trigger'"
 echo ""
 echo "🔗 Links úteis:"
-echo "- Pacote no npm: https://www.npmjs.com/package/n8n-node-imobzi-latest"
-echo "- GitHub: https://github.com/redeuno/n8n-node-imobzi-latest"
+echo "- Pacote no npm: https://www.npmjs.com/package/n8n-nodes-imobzi-latest"
+echo "- GitHub: https://github.com/redeuno/n8n-nodes-imobzi-latest"
 echo "- Documentação: https://developer.imobzi.com/"
 echo ""
 echo "👤 Criado por: Bruno Mantovani"

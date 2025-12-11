@@ -1,4 +1,4 @@
-# n8n-node-imobzi-latest
+# n8n-nodes-imobzi-latest
 
 Este é um pacote de nodes da comunidade n8n que permite integrar com a API da Imobzi em seus workflows.
 
@@ -22,7 +22,7 @@ A Imobzi é uma plataforma de CRM imobiliário que oferece uma API aberta para i
 Siga o [guia de instalação](https://docs.n8n.io/integrations/community-nodes/installation/) na documentação dos nodes da comunidade n8n.
 
 ```bash
-npm install n8n-node-imobzi-latest
+npm install n8n-nodes-imobzi-latest
 ```
 
 ## Configuração
@@ -272,7 +272,7 @@ Cada item retornado inclui metadados de paginação:
 * [Como funciona a chave de API](https://help.imobzi.com/pt-br/article/como-funciona-a-chave-de-api-1nieky8/)
 * [Como utilizar a API para integrar com aplicativos externos](https://help.imobzi.com/pt-br/article/como-utilizar-a-api-para-integrar-com-aplicativos-externos-n4fbe7/)
 * [Como criar e usar webhooks na Imobzi](https://www.imobzi.com/docs/primeiros-passos/integracoes-e-automacoes/como-criar-e-usar-webhooks-na-imobzi/)
-* [Repositório GitHub](https://github.com/redeuno/n8n-node-imobzi-latest)
+* [Repositório GitHub](https://github.com/redeuno/n8n-nodes-imobzi-latest)
 
 ## Histórico de Versões
 
@@ -289,6 +289,6 @@ Cada item retornado inclui metadados de paginação:
 ---
 
 **Criado por**: Bruno Mantovani  
-**GitHub**: [redeuno/n8n-node-imobzi-latest](https://github.com/redeuno/n8n-node-imobzi-latest)  
+**GitHub**: [redeuno/n8n-nodes-imobzi-latest](https://github.com/redeuno/n8n-nodes-imobzi-latest)  
 **Versão**: 1.0.0  
 **Última atualização**: Dezembro 2024

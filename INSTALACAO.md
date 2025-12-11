@@ -1,9 +1,9 @@
-# Guia de Instalação e Uso - n8n-node-imobzi-latest
+# Guia de Instalação e Uso - n8n-nodes-imobzi-latest
 
 ## 📦 Pacote
 
-**npm**: https://www.npmjs.com/package/n8n-node-imobzi-latest  
-**GitHub**: https://github.com/redeuno/n8n-node-imobzi-latest  
+**npm**: https://www.npmjs.com/package/n8n-nodes-imobzi-latest  
+**GitHub**: https://github.com/redeuno/n8n-nodes-imobzi-latest  
 **Versão**: 1.0.0
 
 ## 🚀 Como Instalar
@@ -11,7 +11,7 @@
 ### Opção 1: Instalação Global (Recomendado)
 
 ```bash
-npm install -g n8n-node-imobzi-latest
+npm install -g n8n-nodes-imobzi-latest
 ```
 
 ### Opção 2: Instalação via n8n Community Nodes
@@ -19,7 +19,7 @@ npm install -g n8n-node-imobzi-latest
 1. Acesse o n8n
 2. Vá para **Settings** > **Community Nodes**
 3. Clique em **Install**
-4. Digite `n8n-node-imobzi-latest`
+4. Digite `n8n-nodes-imobzi-latest`
 5. Clique em **Install**
 
 ## 🔧 Configuração no n8n
@@ -172,7 +172,7 @@ Após instalar o pacote, reinicie o n8n para que os novos nodes sejam carregados
 ssh usuario@seu-servidor.com
 
 # 2. Instale o pacote
-npm install -g n8n-node-imobzi-latest
+npm install -g n8n-nodes-imobzi-latest
 
 # 3. Reinicie o n8n
 
@@ -191,7 +191,7 @@ docker restart seu-container-n8n
 ### Verificar instalação
 
 ```bash
-npm list -g n8n-node-imobzi-latest
+npm list -g n8n-nodes-imobzi-latest
 ```
 
 ### Verificar logs
@@ -207,14 +207,14 @@ sudo journalctl -u n8n -f
 ### Reinstalar
 
 ```bash
-npm uninstall -g n8n-node-imobzi-latest
-npm install -g n8n-node-imobzi-latest
+npm uninstall -g n8n-nodes-imobzi-latest
+npm install -g n8n-nodes-imobzi-latest
 ```
 
 ## 🔗 Links Úteis
 
-- **npm**: https://www.npmjs.com/package/n8n-node-imobzi-latest
-- **GitHub**: https://github.com/redeuno/n8n-node-imobzi-latest
+- **npm**: https://www.npmjs.com/package/n8n-nodes-imobzi-latest
+- **GitHub**: https://github.com/redeuno/n8n-nodes-imobzi-latest
 - **API Imobzi**: https://developer.imobzi.com/
 - **Chave de API**: https://help.imobzi.com/pt-br/article/como-funciona-a-chave-de-api-1nieky8/
 - **Webhooks**: https://www.imobzi.com/docs/primeiros-passos/integracoes-e-automacoes/como-criar-e-usar-webhooks-na-imobzi/
@@ -223,8 +223,8 @@ npm install -g n8n-node-imobzi-latest
 
 ```bash
 # Clone o repositório
-git clone https://github.com/redeuno/n8n-node-imobzi-latest.git
-cd n8n-node-imobzi-latest
+git clone https://github.com/redeuno/n8n-nodes-imobzi-latest.git
+cd n8n-nodes-imobzi-latest
 
 # Instale dependências
 npm install
@@ -246,6 +246,6 @@ npm publish
 ---
 
 **Criado por**: Bruno Mantovani  
-**GitHub**: [redeuno/n8n-node-imobzi-latest](https://github.com/redeuno/n8n-node-imobzi-latest)  
+**GitHub**: [redeuno/n8n-nodes-imobzi-latest](https://github.com/redeuno/n8n-nodes-imobzi-latest)  
 **Versão**: 1.0.0  
 **Última atualização**: Dezembro 2024
