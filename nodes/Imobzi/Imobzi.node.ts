@@ -8,69 +8,103 @@ import type {
 } from 'n8n-workflow';
 import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
 
-// Configuração dos recursos e endpoints da API Imobzi
+/**
+ * Configuração dos recursos da API Imobzi
+ * Baseado em 101 testes reais - 11/12/2025
+ */
 interface ResourceConfig {
 	endpoint: string;
 	singularEndpoint?: string;
 	codeEndpoint?: string;
 	dataKey?: string;
+	paginationType: 'cursor' | 'next_page' | 'none';
 }
 
 const resourceConfig: { [resource: string]: ResourceConfig } = {
 	contact: {
 		endpoint: '/v1/contacts',
-		singularEndpoint: '/v1/person',
+		singularEndpoint: '/v1/person', // /v1/contact/{id} NÃO existe!
+		codeEndpoint: '/v1/person/code',
 		dataKey: 'contacts',
+		paginationType: 'cursor',
 	},
 	property: {
 		endpoint: '/v1/properties',
 		singularEndpoint: '/v1/property',
 		codeEndpoint: '/v1/property/code',
 		dataKey: 'properties',
+		paginationType: 'cursor',
 	},
 	lease: {
 		endpoint: '/v1/leases',
 		singularEndpoint: '/v1/lease',
 		codeEndpoint: '/v1/lease/code',
 		dataKey: 'leases',
-	},
-	contract: {
-		endpoint: '/v1/contracts',
-		singularEndpoint: '/v1/contract',
-		codeEndpoint: '/v1/contract/code',
-		dataKey: 'contracts',
+		paginationType: 'cursor',
 	},
 	invoice: {
 		endpoint: '/v1/invoices',
 		singularEndpoint: '/v1/invoice',
 		dataKey: 'invoices',
+		paginationType: 'next_page', // DIFERENTE! Usa next_page
 	},
 	deal: {
-		endpoint: '/v1/deals',
-		singularEndpoint: '/v1/deal',
+		endpoint: '/v1/deals/search', // Para lista plana usa /search
+		dataKey: 'deals',
+		paginationType: 'cursor',
 	},
-	pipeline: {
-		endpoint: '/v1/pipelines',
-		singularEndpoint: '/v1/pipeline',
+	dealByStage: {
+		endpoint: '/v1/deals', // Visão Kanban
+		paginationType: 'none',
 	},
-	pipelineGroup: {
-		endpoint: '/v1/pipeline-groups',
-	},
-	financialTransaction: {
-		endpoint: '/v1/financial-transactions',
-		singularEndpoint: '/v1/financial-transaction',
+	transaction: {
+		endpoint: '/v1/financial/transactions', // CORRETO: com barra!
+		dataKey: 'transactions',
+		paginationType: 'next_page', // DIFERENTE! Usa next_page
 	},
 	calendar: {
 		endpoint: '/v1/calendar',
-		singularEndpoint: '/v1/calendar-item',
 		dataKey: 'calendar_items',
+		paginationType: 'cursor',
+	},
+	document: {
+		endpoint: '/v1/documents',
+		dataKey: 'documents',
+		paginationType: 'none',
 	},
 	user: {
 		endpoint: '/v1/users',
-		singularEndpoint: '/v1/user',
+		paginationType: 'none',
+	},
+	pipeline: {
+		endpoint: '/v1/pipelines',
+		paginationType: 'none',
+	},
+	pipelineGroup: {
+		endpoint: '/v1/pipeline-groups',
+		paginationType: 'none',
 	},
 	propertyType: {
 		endpoint: '/v1/property-types',
+		paginationType: 'none',
+	},
+	mediaSource: {
+		endpoint: '/v1/media-sources',
+		paginationType: 'none',
+	},
+	contactTag: {
+		endpoint: '/v1/contacts/tags',
+		dataKey: 'tags',
+		paginationType: 'none',
+	},
+	lostReason: {
+		endpoint: '/v1/deal/lost-reason',
+		dataKey: 'deals_lost_reasons',
+		paginationType: 'none',
+	},
+	bank: {
+		endpoint: '/v1/banks',
+		paginationType: 'none',
 	},
 };
 
@@ -80,7 +114,7 @@ export class Imobzi implements INodeType {
 		name: 'imobzi',
 		icon: 'file:imobzi.svg',
 		group: ['transform'],
-		version: 5,
+		version: 6,
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
 		description: 'Integração com a API da Imobzi - Plataforma de Gestão Imobiliária',
 		defaults: {
@@ -104,16 +138,22 @@ export class Imobzi implements INodeType {
 				options: [
 					{ name: 'Calendário', value: 'calendar' },
 					{ name: 'Contato', value: 'contact' },
-					{ name: 'Contrato', value: 'contract' },
+					{ name: 'Documento', value: 'document' },
 					{ name: 'Fatura', value: 'invoice' },
-					{ name: 'Funil (Pipeline)', value: 'pipeline' },
-					{ name: 'Grupo De Funil', value: 'pipelineGroup' },
+					{ name: 'Funil (Deal)', value: 'deal' },
+					{ name: 'Funil Por Estágio', value: 'dealByStage' },
 					{ name: 'Imóvel', value: 'property' },
 					{ name: 'Locação', value: 'lease' },
-					{ name: 'Negócio (Deal)', value: 'deal' },
-					{ name: 'Tipo De Imóvel', value: 'propertyType' },
-					{ name: 'Transação Financeira', value: 'financialTransaction' },
+					{ name: 'Transação Financeira', value: 'transaction' },
 					{ name: 'Usuário', value: 'user' },
+					// --- Auxiliares ---
+					{ name: 'Banco', value: 'bank' },
+					{ name: 'Estágio (Pipeline)', value: 'pipeline' },
+					{ name: 'Grupo De Funil', value: 'pipelineGroup' },
+					{ name: 'Motivo De Perda', value: 'lostReason' },
+					{ name: 'Origem (Media Source)', value: 'mediaSource' },
+					{ name: 'Tag De Contato', value: 'contactTag' },
+					{ name: 'Tipo De Imóvel', value: 'propertyType' },
 				],
 				default: 'contact',
 			},
@@ -130,9 +170,8 @@ export class Imobzi implements INodeType {
 					},
 				},
 				options: [
-					{ name: 'Atualizar', value: 'update', action: 'Atualizar contato' },
+					{ name: 'Buscar Por Código', value: 'getByCode', action: 'Buscar contato por código' },
 					{ name: 'Criar', value: 'create', action: 'Criar contato' },
-					{ name: 'Excluir', value: 'delete', action: 'Excluir contato' },
 					{ name: 'Get Many', value: 'getAll', action: 'Listar contatos' },
 					{ name: 'Obter Por ID', value: 'get', action: 'Obter contato por ID' },
 					{ name: 'Verificar Existência', value: 'checkExists', action: 'Verificar se contato existe' },
@@ -152,12 +191,11 @@ export class Imobzi implements INodeType {
 					},
 				},
 				options: [
-					{ name: 'Atualizar', value: 'update', action: 'Atualizar im vel' },
-					{ name: 'Buscar Por Código', value: 'getByCode', action: 'Buscar im vel por c digo' },
-					{ name: 'Criar', value: 'create', action: 'Criar im vel' },
-					{ name: 'Excluir', value: 'delete', action: 'Excluir im vel' },
-					{ name: 'Get Many', value: 'getAll', action: 'Listar im veis' },
-					{ name: 'Obter Por ID', value: 'get', action: 'Obter im vel por id' },
+					{ name: 'Buscar Por Código', value: 'getByCode', action: 'Buscar imóvel por código' },
+					{ name: 'Estatísticas', value: 'statistics', action: 'Obter estatísticas do imóvel' },
+					{ name: 'Get Many', value: 'getAll', action: 'Listar imóveis' },
+					{ name: 'Obter Por ID', value: 'get', action: 'Obter imóvel por ID' },
+					{ name: 'Verificar Existência', value: 'checkPropertyExists', action: 'Verificar se imóvel existe' },
 				],
 				default: 'getAll',
 			},
@@ -174,16 +212,14 @@ export class Imobzi implements INodeType {
 					},
 				},
 				options: [
-					{ name: 'Atualizar', value: 'update', action: 'Atualizar loca o' },
-					{ name: 'Buscar Por Código', value: 'getByCode', action: 'Buscar loca o por c digo' },
-					{ name: 'Criar', value: 'create', action: 'Criar loca o' },
-					{ name: 'Get Many', value: 'getAll', action: 'Listar loca es' },
-					{ name: 'Obter Por ID', value: 'get', action: 'Obter loca o por id' },
+					{ name: 'Buscar Por Código', value: 'getByCode', action: 'Buscar locação por código' },
+					{ name: 'Get Many', value: 'getAll', action: 'Listar locações' },
+					{ name: 'Obter Por ID', value: 'get', action: 'Obter locação por ID' },
 				],
 				default: 'getAll',
 			},
 
-			// ==================== OPERATIONS - CONTRACT ====================
+			// ==================== OPERATIONS - INVOICE ====================
 			{
 				displayName: 'Operação',
 				name: 'operation',
@@ -191,21 +227,17 @@ export class Imobzi implements INodeType {
 				noDataExpression: true,
 				displayOptions: {
 					show: {
-						resource: ['contract'],
+						resource: ['invoice'],
 					},
 				},
 				options: [
-					{ name: 'Atualizar', value: 'update', action: 'Atualizar contrato' },
-					{ name: 'Buscar Por Código', value: 'getByCode', action: 'Buscar contrato por c digo' },
-					{ name: 'Criar', value: 'create', action: 'Criar contrato' },
-					{ name: 'Excluir', value: 'delete', action: 'Excluir contrato' },
-					{ name: 'Get Many', value: 'getAll', action: 'Listar contratos' },
-					{ name: 'Obter Por ID', value: 'get', action: 'Obter contrato por ID' },
+					{ name: 'Get Many', value: 'getAll', action: 'Listar faturas' },
+					{ name: 'Obter Por ID', value: 'get', action: 'Obter fatura por ID' },
 				],
 				default: 'getAll',
 			},
 
-			// ==================== OPERATIONS - GENERIC ====================
+			// ==================== OPERATIONS - DEAL ====================
 			{
 				displayName: 'Operação',
 				name: 'operation',
@@ -213,20 +245,50 @@ export class Imobzi implements INodeType {
 				noDataExpression: true,
 				displayOptions: {
 					show: {
-						resource: ['user', 'deal', 'pipeline', 'financialTransaction', 'calendar', 'pipelineGroup', 'invoice', 'propertyType'],
+						resource: ['deal'],
 					},
 				},
 				options: [
-					{ name: 'Atualizar', value: 'update', action: 'Atualizar registro' },
-					{ name: 'Criar', value: 'create', action: 'Criar registro' },
-					{ name: 'Excluir', value: 'delete', action: 'Excluir registro' },
+					{ name: 'Get Many', value: 'getAll', action: 'Buscar deals (lista plana)' },
+				],
+				default: 'getAll',
+			},
+
+			// ==================== OPERATIONS - DEAL BY STAGE ====================
+			{
+				displayName: 'Operação',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: {
+					show: {
+						resource: ['dealByStage'],
+					},
+				},
+				options: [
+					{ name: 'Get Many', value: 'getAll', action: 'Listar deals por estágio (Kanban)' },
+				],
+				default: 'getAll',
+			},
+
+			// ==================== OPERATIONS - SIMPLE RESOURCES ====================
+			{
+				displayName: 'Operação',
+				name: 'operation',
+				type: 'options',
+				noDataExpression: true,
+				displayOptions: {
+					show: {
+						resource: ['transaction', 'calendar', 'document', 'user', 'pipeline', 'pipelineGroup', 'propertyType', 'mediaSource', 'contactTag', 'lostReason', 'bank'],
+					},
+				},
+				options: [
 					{ name: 'Get Many', value: 'getAll', action: 'Listar registros' },
-					{ name: 'Obter Por ID', value: 'get', action: 'Obter registro por ID' },
 				],
 				default: 'getAll',
 			},
 
-			// ==================== ID FIELD (for get, update, delete - NOT contact) ====================
+			// ==================== ID FIELD ====================
 			{
 				displayName: 'ID',
 				name: 'id',
@@ -236,7 +298,7 @@ export class Imobzi implements INodeType {
 				description: 'ID do registro',
 				displayOptions: {
 					show: {
-						operation: ['get', 'update', 'delete'],
+						operation: ['get', 'statistics'],
 					},
 					hide: {
 						resource: ['contact'],
@@ -244,7 +306,7 @@ export class Imobzi implements INodeType {
 				},
 			},
 
-			// ==================== CONTACT - TYPE FOR GET/UPDATE/DELETE ====================
+			// ==================== CONTACT - TYPE FOR GET ====================
 			{
 				displayName: 'Tipo De Contato',
 				name: 'contactType',
@@ -260,7 +322,7 @@ export class Imobzi implements INodeType {
 				displayOptions: {
 					show: {
 						resource: ['contact'],
-						operation: ['get', 'update', 'delete', 'create'],
+						operation: ['get', 'create', 'getByCode'],
 					},
 				},
 			},
@@ -272,26 +334,26 @@ export class Imobzi implements INodeType {
 				type: 'string',
 				required: true,
 				default: '',
-				description: 'ID do contato (person_id, organization_id ou lead_id)',
+				description: 'ID do contato',
 				displayOptions: {
 					show: {
 						resource: ['contact'],
-						operation: ['get', 'update', 'delete'],
+						operation: ['get'],
 					},
 				},
 			},
 
-			// ==================== CODE FIELD (for getByCode) ====================
+			// ==================== CODE FIELD ====================
 			{
 				displayName: 'Código',
 				name: 'code',
 				type: 'string',
 				required: true,
 				default: '',
-				description: 'Código do registro (ex: 326)',
+				description: 'Código do registro',
 				displayOptions: {
 					show: {
-						operation: ['getByCode'],
+						operation: ['getByCode', 'checkPropertyExists'],
 					},
 				},
 			},
@@ -338,7 +400,7 @@ export class Imobzi implements INodeType {
 				type: 'number',
 				required: true,
 				default: new Date().getFullYear(),
-				description: 'Ano para consulta do calendário',
+				description: 'Ano (obrigatório)',
 				displayOptions: {
 					show: {
 						resource: ['calendar'],
@@ -351,7 +413,7 @@ export class Imobzi implements INodeType {
 				name: 'month',
 				type: 'options',
 				required: true,
-				default: 1,
+				default: new Date().getMonth() + 1,
 				options: [
 					{ name: 'Janeiro', value: 1 },
 					{ name: 'Fevereiro', value: 2 },
@@ -366,7 +428,7 @@ export class Imobzi implements INodeType {
 					{ name: 'Novembro', value: 11 },
 					{ name: 'Dezembro', value: 12 },
 				],
-				description: 'Mês para consulta do calendário',
+				description: 'Mês (obrigatório)',
 				displayOptions: {
 					show: {
 						resource: ['calendar'],
@@ -386,12 +448,15 @@ export class Imobzi implements INodeType {
 					{ name: '100 Registros', value: 100 },
 					{ name: '200 Registros', value: 200 },
 					{ name: '500 Registros', value: 500 },
-					{ name: 'Todos (Máx 1000)', value: 1000 },
+					{ name: 'Todos (Máx 5000)', value: 5000 },
 				],
-				description: 'Quantidade máxima de registros a retornar',
+				description: 'Quantidade máxima de registros (auto-paginação)',
 				displayOptions: {
 					show: {
 						operation: ['getAll'],
+					},
+					hide: {
+						resource: ['user', 'pipeline', 'pipelineGroup', 'propertyType', 'mediaSource', 'contactTag', 'lostReason', 'bank', 'dealByStage'],
 					},
 				},
 			},
@@ -415,42 +480,48 @@ export class Imobzi implements INodeType {
 						name: 'search_text',
 						type: 'string',
 						default: '',
-						description: 'Texto para busca',
 					},
 					{
-						displayName: 'Data Fim',
-						name: 'end_date',
-						type: 'dateTime',
+						displayName: 'ID Do Gestor',
+						name: 'manager_id',
+						type: 'string',
 						default: '',
 					},
 					{
-						displayName: 'Data Início',
-						name: 'start_date',
-						type: 'dateTime',
+						displayName: 'ID Do Usuário',
+						name: 'user_id',
+						type: 'string',
 						default: '',
-					},
-					{
-						displayName: 'Incluir Inativos',
-						name: 'inactive',
-						type: 'boolean',
-						default: false,
 					},
 					{
 						displayName: 'Origem',
 						name: 'media_source',
+						type: 'string',
+						default: '',
+						description: 'Ex: OLX, Site, Facebook',
+					},
+					{
+						displayName: 'Smart List',
+						name: 'smart_list',
 						type: 'options',
 						default: '',
 						options: [
-							{ name: 'Facebook', value: 'Facebook' },
-							{ name: 'Google', value: 'Google' },
-							{ name: 'Indicação', value: 'Indicação' },
-							{ name: 'Instagram', value: 'Instagram' },
-							{ name: 'Nenhum', value: 'Nenhum' },
-							{ name: 'OLX', value: 'OLX' },
-							{ name: 'Outros', value: 'Outros' },
-							{ name: 'Site', value: 'Site' },
+							{ name: 'Aniversariantes (Meus)', value: 'birthdays_only_mine' },
+							{ name: 'Aniversariantes (Todos)', value: 'birthdays_all' },
+							{ name: 'Com Negócios', value: 'with_deals' },
+							{ name: 'Compartilhados Comigo', value: 'shared_with_me' },
+							{ name: 'Compartilhados Com Outros', value: 'shared_with_others' },
+							{ name: 'Desatualizados', value: 'out_of_date' },
+							{ name: 'Desatualizados (90 Dias)', value: 'out_of_date_90_days' },
+							{ name: 'Inativos', value: 'inactives' },
+							{ name: 'Meus Contatos', value: 'my_contacts' },
+							{ name: 'Meus Leads', value: 'my_leads' },
+							{ name: 'Novos Contatos', value: 'new_contacts' },
+							{ name: 'Novos Leads', value: 'new_leads' },
+							{ name: 'Pendentes', value: 'pending' },
+							{ name: 'Sem Interesse', value: 'without_interest' },
+							{ name: 'Sem Negócios', value: 'without_deals' },
 							{ name: 'Todos', value: '' },
-							{ name: 'WhatsApp', value: 'WhatsApp' },
 						],
 					},
 					{
@@ -458,7 +529,7 @@ export class Imobzi implements INodeType {
 						name: 'tags',
 						type: 'string',
 						default: '',
-						description: 'Tags separadas por vírgula',
+						description: 'Ex: contact, owner',
 					},
 					{
 						displayName: 'Tipo De Contato',
@@ -502,16 +573,10 @@ export class Imobzi implements INodeType {
 						],
 					},
 					{
-						displayName: 'Ordenar Por',
-						name: 'order',
-						type: 'options',
+						displayName: 'ID Do Corretor',
+						name: 'user_id',
+						type: 'string',
 						default: '',
-						options: [
-							{ name: 'Código (Crescente)', value: 'code_asc' },
-							{ name: 'Código (Decrescente)', value: 'code_desc' },
-							{ name: 'Data De Atualização', value: 'updated_at' },
-							{ name: 'Padrão', value: '' },
-						],
 					},
 					{
 						displayName: 'Smart List',
@@ -522,10 +587,12 @@ export class Imobzi implements INodeType {
 							{ name: 'Atualizados', value: 'updated' },
 							{ name: 'Com Placa', value: 'with_plaque' },
 							{ name: 'Compartilhados Comigo', value: 'shared_with_me' },
+							{ name: 'Compartilhados Com Outros', value: 'shared_with_others' },
 							{ name: 'Desatualizados', value: 'outdated' },
 							{ name: 'Disponíveis', value: 'available' },
 							{ name: 'Disponíveis E Reservados', value: 'available_reserved' },
 							{ name: 'Edifícios', value: 'buildings' },
+							{ name: 'Excedem Limite', value: 'exceeding' },
 							{ name: 'Inativos', value: 'inactives' },
 							{ name: 'Indisponíveis', value: 'unavailable_properties' },
 							{ name: 'Locação', value: 'rent' },
@@ -536,6 +603,7 @@ export class Imobzi implements INodeType {
 							{ name: 'Publicados', value: 'site_publish' },
 							{ name: 'Reservados', value: 'reserved' },
 							{ name: 'Sem Fotos', value: 'without_photos' },
+							{ name: 'Sem Localização', value: 'without_location' },
 							{ name: 'Sem Proprietário', value: 'properties_without_owner' },
 							{ name: 'Temporada', value: 'vacation_rental' },
 							{ name: 'Terceiros', value: 'properties_third_party' },
@@ -544,10 +612,16 @@ export class Imobzi implements INodeType {
 						],
 					},
 					{
-						displayName: 'Todos Os Corretores',
-						name: 'all_brokers',
-						type: 'boolean',
-						default: false,
+						displayName: 'Status',
+						name: 'status',
+						type: 'options',
+						default: '',
+						options: [
+							{ name: 'Disponível', value: 'available' },
+							{ name: 'Indisponível', value: 'unavailable' },
+							{ name: 'Reservado', value: 'reserved' },
+							{ name: 'Todos', value: '' },
+						],
 					},
 				],
 			},
@@ -567,44 +641,43 @@ export class Imobzi implements INodeType {
 				},
 				options: [
 					{
-						displayName: 'Busca',
-						name: 'search_text',
-						type: 'string',
-						default: '',
-					},
-					{
-						displayName: 'Data Fim',
-						name: 'end_at',
-						type: 'dateTime',
-						default: '',
-					},
-					{
-						displayName: 'Data Início',
-						name: 'start_at',
-						type: 'dateTime',
-						default: '',
-					},
-					{
-						displayName: 'ID Do Imóvel',
-						name: 'property_id',
-						type: 'string',
-						default: '',
-					},
-					{
-						displayName: 'ID Do Proprietário',
-						name: 'owner_id',
-						type: 'string',
-						default: '',
-					},
-					{
 						displayName: 'Smart List',
 						name: 'smart_list',
 						type: 'options',
 						default: '',
 						options: [
 							{ name: 'Ativos', value: 'active' },
-							{ name: 'Encerrados', value: 'terminated' },
 							{ name: 'Inativos', value: 'inactive' },
+							{ name: 'Todos', value: '' },
+						],
+					},
+				],
+			},
+
+			// ==================== INVOICE FILTERS ====================
+			{
+				displayName: 'Filtros',
+				name: 'invoiceFilters',
+				type: 'collection',
+				placeholder: 'Adicionar Filtro',
+				default: {},
+				displayOptions: {
+					show: {
+						resource: ['invoice'],
+						operation: ['getAll'],
+					},
+				},
+				options: [
+					{
+						displayName: 'Status',
+						name: 'status',
+						type: 'options',
+						default: '',
+						options: [
+							{ name: 'Atrasado', value: 'overdue' },
+							{ name: 'Cancelado', value: 'cancelled' },
+							{ name: 'Pago', value: 'paid' },
+							{ name: 'Pendente', value: 'pending' },
 							{ name: 'Todos', value: '' },
 						],
 					},
@@ -626,26 +699,58 @@ export class Imobzi implements INodeType {
 				},
 				options: [
 					{
-						displayName: 'Busca',
-						name: 'search_text',
+						displayName: 'ID Do Estágio (Pipeline)',
+						name: 'pipeline_id',
 						type: 'string',
 						default: '',
 					},
 					{
-						displayName: 'ID Do Contato',
-						name: 'contact_id',
+						displayName: 'ID Do Usuário',
+						name: 'user_id',
 						type: 'string',
 						default: '',
 					},
+					{
+						displayName: 'Mostrar Atividades',
+						name: 'show_activities',
+						type: 'boolean',
+						default: false,
+					},
+					{
+						displayName: 'Status',
+						name: 'deal_status',
+						type: 'options',
+						default: '',
+						options: [
+							{ name: 'Desatualizado', value: 'out_of_date' },
+							{ name: 'Em Progresso', value: 'in progress' },
+							{ name: 'Estagnado', value: 'stagnant' },
+							{ name: 'Ganho', value: 'win' },
+							{ name: 'Perdido', value: 'lost' },
+							{ name: 'Radar', value: 'property_radar' },
+							{ name: 'Todos', value: 'all' },
+						],
+					},
+				],
+			},
+
+			// ==================== DEAL BY STAGE FILTERS ====================
+			{
+				displayName: 'Filtros',
+				name: 'dealByStageFilters',
+				type: 'collection',
+				placeholder: 'Adicionar Filtro',
+				default: {},
+				displayOptions: {
+					show: {
+						resource: ['dealByStage'],
+						operation: ['getAll'],
+					},
+				},
+				options: [
 					{
 						displayName: 'ID Do Grupo De Funil',
 						name: 'pipeline_group_id',
-						type: 'string',
-						default: '',
-					},
-					{
-						displayName: 'ID Do Imóvel',
-						name: 'property_id',
 						type: 'string',
 						default: '',
 					},
@@ -661,71 +766,13 @@ export class Imobzi implements INodeType {
 						type: 'options',
 						default: '',
 						options: [
-							{ name: 'Aberto', value: 'open' },
-							{ name: 'Ganho', value: 'won' },
+							{ name: 'Desatualizado', value: 'out_of_date' },
+							{ name: 'Em Progresso', value: 'in progress' },
+							{ name: 'Estagnado', value: 'stagnant' },
+							{ name: 'Ganho', value: 'win' },
 							{ name: 'Perdido', value: 'lost' },
-							{ name: 'Todos', value: '' },
-						],
-					},
-					{
-						displayName: 'Tipo',
-						name: 'deal_type',
-						type: 'options',
-						default: '',
-						options: [
-							{ name: 'Locação', value: 'rent' },
-							{ name: 'Todos', value: '' },
-							{ name: 'Venda', value: 'sale' },
-						],
-					},
-				],
-			},
-
-			// ==================== INVOICE FILTERS ====================
-			{
-				displayName: 'Filtros',
-				name: 'invoiceFilters',
-				type: 'collection',
-				placeholder: 'Adicionar Filtro',
-				default: {},
-				displayOptions: {
-					show: {
-						resource: ['invoice'],
-						operation: ['getAll'],
-					},
-				},
-				options: [
-					{
-						displayName: 'ID Da Locação',
-						name: 'lease_id',
-						type: 'string',
-						default: '',
-					},
-					{
-						displayName: 'Método De Pagamento',
-						name: 'payment_method',
-						type: 'options',
-						default: '',
-						options: [
-							{ name: 'Boleto', value: 'bank_slip' },
-							{ name: 'Cartão', value: 'credit_card' },
-							{ name: 'Dinheiro', value: 'cash' },
-							{ name: 'PIX', value: 'pix' },
-							{ name: 'Todos', value: '' },
-							{ name: 'Transferência', value: 'transfer' },
-						],
-					},
-					{
-						displayName: 'Status',
-						name: 'status',
-						type: 'options',
-						default: '',
-						options: [
-							{ name: 'Atrasado', value: 'overdue' },
-							{ name: 'Cancelado', value: 'cancelled' },
-							{ name: 'Pago', value: 'paid' },
-							{ name: 'Pendente', value: 'pending' },
-							{ name: 'Todos', value: '' },
+							{ name: 'Radar', value: 'property_radar' },
+							{ name: 'Todos', value: 'all' },
 						],
 					},
 				],
@@ -746,17 +793,6 @@ export class Imobzi implements INodeType {
 				},
 				options: [
 					{
-						displayName: 'Dia',
-						name: 'day',
-						type: 'number',
-						default: 0,
-						description: 'Dia específico (0 = todos)',
-						typeOptions: {
-							minValue: 0,
-							maxValue: 31,
-						},
-					},
-					{
 						displayName: 'ID Do Usuário',
 						name: 'user_id',
 						type: 'string',
@@ -768,70 +804,46 @@ export class Imobzi implements INodeType {
 						type: 'options',
 						default: '',
 						options: [
-							{ name: 'Evento', value: 'event' },
-							{ name: 'Lembrete', value: 'reminder' },
+							{ name: 'Chamada', value: 'call' },
 							{ name: 'Tarefa', value: 'task' },
 							{ name: 'Todos', value: '' },
 							{ name: 'Visita', value: 'visit' },
+							{ name: 'WhatsApp', value: 'whatsapp' },
 						],
 					},
 				],
 			},
 
-			// ==================== TRANSACTION FILTERS ====================
+			// ==================== DOCUMENT FILTERS ====================
 			{
 				displayName: 'Filtros',
-				name: 'transactionFilters',
+				name: 'documentFilters',
 				type: 'collection',
 				placeholder: 'Adicionar Filtro',
 				default: {},
 				displayOptions: {
 					show: {
-						resource: ['financialTransaction'],
+						resource: ['document'],
 						operation: ['getAll'],
 					},
 				},
 				options: [
 					{
-						displayName: 'Categoria',
-						name: 'category',
-						type: 'options',
+						displayName: 'ID Do Contato',
+						name: 'contact_id',
+						type: 'string',
 						default: '',
-						options: [
-							{ name: 'Comissões', value: 'Comissões' },
-							{ name: 'Despesas', value: 'Despesas Operacionais' },
-							{ name: 'Receitas', value: 'Receitas' },
-							{ name: 'Terceiros', value: 'Terceiros (Administração)' },
-							{ name: 'Todas', value: '' },
-						],
 					},
 					{
-						displayName: 'Status',
-						name: 'status',
-						type: 'options',
+						displayName: 'ID Do Imóvel',
+						name: 'property_id',
+						type: 'string',
 						default: '',
-						options: [
-							{ name: 'Pago', value: 'paid' },
-							{ name: 'Pendente', value: 'pending' },
-							{ name: 'Todos', value: '' },
-						],
-					},
-					{
-						displayName: 'Tipo',
-						name: 'transaction_type',
-						type: 'options',
-						default: '',
-						options: [
-							{ name: 'Despesa', value: 'expense' },
-							{ name: 'Receita', value: 'income' },
-							{ name: 'Repasse', value: 'onlending' },
-							{ name: 'Todos', value: '' },
-						],
 					},
 				],
 			},
 
-			// ==================== CREATE/UPDATE BODY ====================
+			// ==================== CREATE BODY ====================
 			{
 				displayName: 'Dados (JSON)',
 				name: 'body',
@@ -840,7 +852,7 @@ export class Imobzi implements INodeType {
 				description: 'Dados do registro em formato JSON',
 				displayOptions: {
 					show: {
-						operation: ['create', 'update'],
+						operation: ['create'],
 					},
 				},
 			},
@@ -868,9 +880,8 @@ export class Imobzi implements INodeType {
 
 				// ==================== SWITCH OPERATION ====================
 				switch (operation) {
-					// ==================== CHECK EXISTS ====================
+					// ==================== CHECK EXISTS (Contact) ====================
 					case 'checkExists': {
-						method = 'GET';
 						endpoint = '/v1/contact/exists';
 						const checkBy = this.getNodeParameter('checkExistsBy', itemIndex) as string;
 						const checkValue = this.getNodeParameter('checkExistsValue', itemIndex) as string;
@@ -878,61 +889,30 @@ export class Imobzi implements INodeType {
 						break;
 					}
 
-					// ==================== GET BY CODE ====================
-					case 'getByCode': {
-						method = 'GET';
-						const code = this.getNodeParameter('code', itemIndex) as string;
-						if (!config.codeEndpoint) {
-							throw new NodeOperationError(this.getNode(), `Busca por código não disponível para "${resource}"`, { itemIndex });
-						}
-						endpoint = `${config.codeEndpoint}/${code}`;
+					// ==================== CHECK PROPERTY EXISTS ====================
+					case 'checkPropertyExists': {
+						endpoint = '/v1/property/exists';
+						const propCode = this.getNodeParameter('code', itemIndex) as string;
+						qs.code = propCode;
 						break;
 					}
 
-					// ==================== GET ALL ====================
-					case 'getAll': {
-						method = 'GET';
-						endpoint = config.endpoint;
-
-						// Calendário: campos obrigatórios
-						if (resource === 'calendar') {
-							qs.year = this.getNodeParameter('year', itemIndex) as number;
-							qs.month = this.getNodeParameter('month', itemIndex) as number;
+					// ==================== GET BY CODE ====================
+					case 'getByCode': {
+						const code = this.getNodeParameter('code', itemIndex) as string;
+						if (resource === 'contact') {
+							const contactType = this.getNodeParameter('contactType', itemIndex) as string;
+							endpoint = `/v1/${contactType}/code/${code}`;
+						} else if (config.codeEndpoint) {
+							endpoint = `${config.codeEndpoint}/${code}`;
+						} else {
+							throw new NodeOperationError(this.getNode(), `Busca por código não disponível para "${resource}"`, { itemIndex });
 						}
-
-						// Aplicar filtros por recurso
-						const filtersMap: { [key: string]: string } = {
-							contact: 'contactFilters',
-							property: 'propertyFilters',
-							lease: 'leaseFilters',
-							deal: 'dealFilters',
-							invoice: 'invoiceFilters',
-							calendar: 'calendarFilters',
-							financialTransaction: 'transactionFilters',
-						};
-
-						const filtersKey = filtersMap[resource];
-						if (filtersKey) {
-							const filters = this.getNodeParameter(filtersKey, itemIndex, {}) as IDataObject;
-							for (const [key, value] of Object.entries(filters)) {
-								if (value !== '' && value !== undefined && value !== null && value !== 0) {
-									// Converter datas
-									if (typeof value === 'string' && value.includes('T')) {
-										qs[key] = value.split('T')[0];
-									} else {
-										qs[key] = value;
-									}
-								}
-							}
-						}
-
-						qs.limit = 50; // Máximo da API
 						break;
 					}
 
 					// ==================== GET ====================
 					case 'get': {
-						method = 'GET';
 						if (resource === 'contact') {
 							const contactType = this.getNodeParameter('contactType', itemIndex) as string;
 							const contactId = this.getNodeParameter('contactId', itemIndex) as string;
@@ -941,6 +921,13 @@ export class Imobzi implements INodeType {
 							const id = this.getNodeParameter('id', itemIndex) as string;
 							endpoint = `${config.singularEndpoint || config.endpoint}/${id}`;
 						}
+						break;
+					}
+
+					// ==================== STATISTICS ====================
+					case 'statistics': {
+						const propId = this.getNodeParameter('id', itemIndex) as string;
+						endpoint = `/v1/property/${propId}/statistics`;
 						break;
 					}
 
@@ -965,109 +952,158 @@ export class Imobzi implements INodeType {
 						break;
 					}
 
-					// ==================== UPDATE ====================
-					case 'update': {
-						method = 'POST';
-						if (resource === 'contact') {
-							const contactType = this.getNodeParameter('contactType', itemIndex) as string;
-							const contactId = this.getNodeParameter('contactId', itemIndex) as string;
-							endpoint = `/v1/${contactType}/${contactId}`;
-						} else {
-							const id = this.getNodeParameter('id', itemIndex) as string;
-							endpoint = `${config.singularEndpoint || config.endpoint}/${id}`;
-						}
-						const updateBodyJson = this.getNodeParameter('body', itemIndex) as string;
-						try {
-							body = JSON.parse(updateBodyJson);
-						} catch {
-							throw new NodeOperationError(this.getNode(), 'JSON inválido', { itemIndex });
-						}
-						break;
-					}
+					// ==================== GET ALL ====================
+					case 'getAll': {
+						endpoint = config.endpoint;
 
-					// ==================== DELETE ====================
-					case 'delete': {
-						method = 'DELETE';
-						if (resource === 'contact') {
-							const contactType = this.getNodeParameter('contactType', itemIndex) as string;
-							const contactId = this.getNodeParameter('contactId', itemIndex) as string;
-							endpoint = `/v1/${contactType}/${contactId}`;
-						} else {
-							const id = this.getNodeParameter('id', itemIndex) as string;
-							endpoint = `${config.singularEndpoint || config.endpoint}/${id}`;
+						// Calendário: campos obrigatórios
+						if (resource === 'calendar') {
+							qs.year = this.getNodeParameter('year', itemIndex) as number;
+							qs.month = this.getNodeParameter('month', itemIndex) as number;
+						}
+
+						// Aplicar filtros
+						const filtersMap: { [key: string]: string } = {
+							contact: 'contactFilters',
+							property: 'propertyFilters',
+							lease: 'leaseFilters',
+							invoice: 'invoiceFilters',
+							deal: 'dealFilters',
+							dealByStage: 'dealByStageFilters',
+							calendar: 'calendarFilters',
+							document: 'documentFilters',
+						};
+
+						const filtersKey = filtersMap[resource];
+						if (filtersKey) {
+							const filters = this.getNodeParameter(filtersKey, itemIndex, {}) as IDataObject;
+							for (const [key, value] of Object.entries(filters)) {
+								if (value !== '' && value !== undefined && value !== null) {
+									qs[key] = value;
+								}
+							}
+						}
+
+						// Limite (exceto contacts que ignora)
+						if (resource !== 'contact' && config.paginationType !== 'none') {
+							qs.limit = 50;
 						}
 						break;
 					}
 				}
 
 				// ==================== EXECUTE REQUEST ====================
-				if (operation === 'getAll') {
+				if (operation === 'getAll' && config.paginationType !== 'none') {
 					// Auto-paginação
 					const recordLimit = this.getNodeParameter('recordLimit', itemIndex, 50) as number;
 					const allResults: IDataObject[] = [];
-					let cursor: string | undefined;
-					let pageCount = 0;
-					const maxPages = Math.ceil(recordLimit / 50);
 
-					do {
-						if (cursor) {
-							qs.cursor = cursor;
-						}
+					if (config.paginationType === 'cursor') {
+						// Paginação com cursor
+						let cursor: string | undefined;
+						let pageCount = 0;
 
-						const response = await this.helpers.requestWithAuthentication.call(
-							this,
-							'imobziApi',
-							{
-								method,
-								url: endpoint,
-								baseURL: 'https://api.imobzi.app',
-								qs,
-								json: true,
-							},
-						);
+						do {
+							if (cursor) {
+								qs.cursor = cursor;
+							}
 
-						// Extrair dados
-						let pageData: IDataObject[] = [];
-						if (config.dataKey && response[config.dataKey]) {
-							pageData = response[config.dataKey] as IDataObject[];
-						} else if (Array.isArray(response)) {
-							pageData = response;
-						} else if (response.calendar_items) {
-							pageData = response.calendar_items as IDataObject[];
-						} else {
-							// Resposta não é array - retornar como está
-							returnData.push({ json: response, pairedItem: itemIndex });
-							break;
-						}
-
-						allResults.push(...pageData);
-						pageCount++;
-
-						// Cursor para próxima página
-						cursor = response.cursor || response._metadata?.cursor;
-
-						// Condições de parada
-						if (!cursor || allResults.length >= recordLimit || pageCount >= maxPages || pageData.length < 50) {
-							break;
-						}
-					} while (true);
-
-					// Retornar resultados
-					const finalResults = allResults.slice(0, recordLimit);
-					for (const item of finalResults) {
-						returnData.push({
-							json: {
-								...item,
-								_pagination: {
-									total_fetched: finalResults.length,
-									pages: pageCount,
+							const response = await this.helpers.requestWithAuthentication.call(
+								this,
+								'imobziApi',
+								{
+									method,
+									url: endpoint,
+									baseURL: 'https://api.imobzi.app',
+									qs,
+									json: true,
 								},
-							},
-							pairedItem: itemIndex,
-						});
+							);
+
+							// Extrair dados
+							let pageData: IDataObject[] = [];
+							if (config.dataKey && response[config.dataKey]) {
+								pageData = response[config.dataKey] as IDataObject[];
+							} else if (Array.isArray(response)) {
+								pageData = response;
+							} else {
+								// Resposta especial (dealByStage)
+								returnData.push({ json: response, pairedItem: itemIndex });
+								break;
+							}
+
+							allResults.push(...pageData);
+							pageCount++;
+
+							// Cursor para próxima página
+							cursor = response.cursor || response._metadata?.cursor;
+
+							// Condições de parada
+							if (!cursor || allResults.length >= recordLimit || pageData.length < 50) {
+								break;
+							}
+						} while (allResults.length < recordLimit);
+
+						// Retornar resultados
+						const finalResults = allResults.slice(0, recordLimit);
+						for (const item of finalResults) {
+							returnData.push({
+								json: item,
+								pairedItem: itemIndex,
+							});
+						}
+
+					} else if (config.paginationType === 'next_page') {
+						// Paginação com next_page (invoices, transactions)
+						let page = 1;
+
+						do {
+							if (page > 1) {
+								qs.next_page = page;
+							}
+
+							const response = await this.helpers.requestWithAuthentication.call(
+								this,
+								'imobziApi',
+								{
+									method,
+									url: endpoint,
+									baseURL: 'https://api.imobzi.app',
+									qs,
+									json: true,
+								},
+							);
+
+							// Extrair dados
+							let pageData: IDataObject[] = [];
+							if (config.dataKey && response[config.dataKey]) {
+								pageData = response[config.dataKey] as IDataObject[];
+							} else if (Array.isArray(response)) {
+								pageData = response;
+							}
+
+							allResults.push(...pageData);
+
+							// Verificar se há próxima página
+							if (response.next_page === null || allResults.length >= recordLimit || pageData.length === 0) {
+								break;
+							}
+
+							page++;
+						} while (allResults.length < recordLimit);
+
+						// Retornar resultados
+						const finalResults = allResults.slice(0, recordLimit);
+						for (const item of finalResults) {
+							returnData.push({
+								json: item,
+								pairedItem: itemIndex,
+							});
+						}
 					}
+
 				} else {
-					// Requisição simples
+					// Requisição simples (sem paginação ou operações get/create)
 					const response = await this.helpers.requestWithAuthentication.call(
 						this,
 						'imobziApi',
@@ -1081,11 +1117,22 @@ export class Imobzi implements INodeType {
 						},
 					);
 
-					if (operation === 'delete') {
-						returnData.push({
-							json: { success: true, message: 'Registro excluído' },
-							pairedItem: itemIndex,
-						});
+					// Para getAll de recursos sem paginação
+					if (operation === 'getAll' && config.paginationType === 'none') {
+						let data: IDataObject[] = [];
+						if (config.dataKey && response[config.dataKey]) {
+							data = response[config.dataKey] as IDataObject[];
+						} else if (Array.isArray(response)) {
+							data = response;
+						} else {
+							// Retornar objeto como está
+							returnData.push({ json: response, pairedItem: itemIndex });
+							continue;
+						}
+
+						for (const item of data) {
+							returnData.push({ json: item, pairedItem: itemIndex });
+						}
 					} else {
 						returnData.push({ json: response, pairedItem: itemIndex });
 					}

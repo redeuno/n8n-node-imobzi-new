@@ -1,329 +1,207 @@
 # n8n-nodes-imobzi-latest
 
-Este é um pacote de nodes da comunidade n8n que permite integrar com a API da Imobzi em seus workflows.
+Node customizado para integração com a **API da Imobzi** no n8n.
 
-A Imobzi é uma plataforma de CRM imobiliário que oferece uma API aberta para integração com outros softwares. Para utilizar a API, é necessário possuir o plano CRM Business ou a Gestão de Locação Real Estate.
+[![npm version](https://badge.fury.io/js/n8n-nodes-imobzi-latest.svg)](https://www.npmjs.com/package/n8n-nodes-imobzi-latest)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-[n8n](https://n8n.io/) é uma plataforma de automação de workflows com licença fair-code.
+## 📋 Recursos Disponíveis
 
-## Índice
+### Recursos Principais
 
-- [Instalação](#instalação)  
-- [Configuração](#configuração)  
-- [Recursos](#recursos)  
-- [Operações](#operações)  
-- [Auto-Paginação](#auto-paginação)  
-- [Webhooks](#webhooks)  
-- [Exemplos](#exemplos)  
-- [Compatibilidade](#compatibilidade)  
-- [Links Úteis](#links-úteis)  
+| Recurso | Operações |
+|---------|-----------|
+| **Contato** | Listar, Buscar por ID, Buscar por Código, Verificar Existência |
+| **Imóvel** | Listar, Buscar por ID, Buscar por Código, Estatísticas, Verificar Existência |
+| **Locação** | Listar, Buscar por ID, Buscar por Código |
+| **Fatura** | Listar, Buscar por ID |
+| **Funil (Deal)** | Listar (busca plana) |
+| **Funil Por Estágio** | Listar (visão Kanban) |
+| **Transação Financeira** | Listar |
+| **Calendário** | Listar (requer ano/mês) |
+| **Documento** | Listar |
+| **Usuário** | Listar |
 
-## Instalação
+### Recursos Auxiliares (para dropdowns)
 
-Siga o [guia de instalação](https://docs.n8n.io/integrations/community-nodes/installation/) na documentação dos nodes da comunidade n8n.
+- Estágio (Pipeline)
+- Grupo de Funil
+- Tipo de Imóvel
+- Origem (Media Source)
+- Tag de Contato
+- Motivo de Perda
+- Banco
+
+## 🚀 Instalação
+
+### Via npm (recomendado)
 
 ```bash
+npm install n8n-nodes-imobzi-latest -g
+```
+
+### No n8n Cloud
+
+1. Vá em **Settings** > **Community Nodes**
+2. Clique em **Install a community node**
+3. Digite: `n8n-nodes-imobzi-latest`
+4. Clique em **Install**
+
+### VPS / Self-hosted
+
+```bash
+cd ~/.n8n/nodes
 npm install n8n-nodes-imobzi-latest
+# Reiniciar n8n
+pm2 restart n8n
 ```
 
-## Configuração
+## ⚙️ Configuração
 
-### 1. Gerar Chave de API no Imobzi
+### Obter API Key
 
-1. Acesse o menu lateral do Imobzi
-2. Clique em **"Integrações & Automações"**
-3. Selecione **"Chave de API"**
-4. Clique em **"Adicionar uma nova chave de API"**
-5. Nomeie a chave conforme o serviço que irá utilizá-la
-6. Copie a chave gerada
+1. Acesse sua conta Imobzi
+2. Vá em **Configurações** > **Integrações** > **API**
+3. Copie sua **API Key**
 
-Para mais detalhes, consulte: [Como funciona a chave de API](https://help.imobzi.com/pt-br/article/como-funciona-a-chave-de-api-1nieky8/)
+### Configurar no n8n
 
-### 2. Configurar Permissões da Chave de API
+1. Adicione um node **Imobzi**
+2. Clique em **Create New Credential**
+3. Cole sua **API Key**
+4. Salve
 
-1. Ao criar ou editar uma chave de API, defina exatamente quais métodos (funções) a integração poderá acessar
-2. Marque os métodos desejados ou utilize a opção **"Selecionar todos os métodos"** para liberar todas as funções
+## 📖 Uso
 
-### 3. Configurar Credenciais no n8n
-
-1. No n8n, vá para **Settings** > **Credentials**
-2. Clique em **Add Credential**
-3. Procure por **"Imobzi API"**
-4. Configure:
-   - **API Key**: Cole a chave gerada no Imobzi
-
-### Autenticação
-
-A API utiliza o header `X-Imobzi-Secret` para autenticação:
+### Listar Contatos
 
 ```
-X-Imobzi-Secret: sua-chave-de-api
+Recurso: Contato
+Operação: Get Many
+Filtros:
+  - Tipo de Contato: Pessoa/Organização/Lead
+  - Origem: OLX, Site, etc
+  - Smart List: Meus Contatos, Novos Leads, etc
 ```
 
-**Base URL**: `https://api.imobzi.app`
+### Buscar Imóvel por Código
 
-## Recursos
+```
+Recurso: Imóvel
+Operação: Buscar Por Código
+Código: 326
+```
 
-O node suporta os seguintes recursos da API da Imobzi (v1):
+### Listar Faturas Pagas
 
-| Recurso | Endpoint | Descrição |
-|---------|----------|-----------|
-| **Contatos** | `/v1/contacts` | Gerenciamento de contatos |
-| **Pessoas** | `/v1/person/{id}` | Detalhes de pessoas físicas |
-| **Organizações** | `/v1/organization/{id}` | Detalhes de empresas |
-| **Leads** | `/v1/lead/{id}` | Detalhes de leads |
-| **Imóveis** | `/v1/properties` | Gerenciamento de imóveis |
-| **Locações** | `/v1/leases` | Contratos de locação |
-| **Contratos** | `/v1/contracts` | Contratos de venda |
-| **Faturas** | `/v1/invoices` | Gerenciamento de faturas |
-| **Negócios (Deals)** | `/v1/deals` | Negócios/oportunidades |
-| **Pipelines** | `/v1/pipelines` | Estágios do funil |
-| **Grupos de Funil** | `/v1/pipeline-groups` | Grupos de funil |
-| **Transações Financeiras** | `/v1/financial-transactions` | Transações financeiras |
-| **Calendário** | `/v1/calendar` | Eventos do calendário |
-| **Usuários** | `/v1/users` | Usuários/corretores |
-| **Tipos de Imóvel** | `/v1/property-types` | Tipos de imóveis |
+```
+Recurso: Fatura
+Operação: Get Many
+Filtros:
+  - Status: Pago
+```
 
-## Operações
+### Listar Calendário
+
+```
+Recurso: Calendário
+Operação: Get Many
+Ano: 2025
+Mês: Dezembro
+Filtros:
+  - Tipo de Item: Visita/Tarefa/WhatsApp/Chamada
+```
+
+## 🔧 Auto-Paginação
+
+O node suporta auto-paginação automática. Selecione a quantidade de registros:
+
+- 50 registros
+- 100 registros
+- 200 registros
+- 500 registros
+- Todos (máx 5000)
+
+## 📊 Filtros Disponíveis
 
 ### Contato
-
-| Operação | Descrição | Endpoint |
-|----------|-----------|----------|
-| **Listar** | Lista todos os contatos | `GET /v1/contacts` |
-| **Obter** | Detalhes completos por ID | `GET /v1/person/{id}` ou `/v1/organization/{id}` |
-| **Buscar por Código** | Busca por código | `GET /v1/person/code/{code}` |
-| **Verificar Existência** | Verifica por CPF/Email/Tel/CNPJ | `GET /v1/contact/exists` |
-| **Criar** | Cria pessoa, lead ou organização | `POST /v1/persons` |
-| **Atualizar** | Atualiza contato | `POST /v1/person/{id}` |
-| **Excluir** | Remove contato | `DELETE /v1/person/{id}` |
+- Tipo de Contato (person, organization, lead)
+- Origem (media_source)
+- Tags
+- Smart List
+- ID do Usuário/Gestor
+- Busca (search_text)
 
 ### Imóvel
-
-| Operação | Descrição | Endpoint |
-|----------|-----------|----------|
-| **Listar** | Lista imóveis com Smart List | `GET /v1/properties` |
-| **Obter** | Detalhes completos por ID | `GET /v1/property/{id}` |
-| **Buscar por Código** | Busca por código | `GET /v1/property/code/{code}` |
-| **Criar** | Cria novo imóvel | `POST /v1/properties` |
-| **Atualizar** | Atualiza imóvel | `POST /v1/property/{id}` |
-| **Excluir** | Remove imóvel | `DELETE /v1/property/{id}` |
+- Smart List (available, rent, sale, etc)
+- Finalidade (residential, commercial, rural)
+- Status (available, reserved, unavailable)
+- ID do Corretor
 
 ### Locação
+- Smart List (active, inactive)
 
-| Operação | Descrição | Endpoint |
-|----------|-----------|----------|
-| **Listar** | Lista locações com filtros | `GET /v1/leases` |
-| **Obter** | Detalhes completos por ID | `GET /v1/lease/{id}` |
-| **Buscar por Código** | Busca por código | `GET /v1/lease/code/{code}` |
-| **Criar** | Cria nova locação | `POST /v1/leases` |
-| **Atualizar** | Atualiza locação | `POST /v1/lease/{id}` |
+### Fatura
+- Status (pending, paid, overdue, cancelled)
 
-## Auto-Paginação
+### Deal
+- Status (in progress, win, lost, stagnant, etc)
+- ID do Usuário
+- ID do Estágio
+- Mostrar Atividades
 
-O node suporta auto-paginação para buscar múltiplas páginas automaticamente:
+### Calendário
+- Tipo de Item (task, visit, whatsapp, call)
+- ID do Usuário
 
-| Opção | Descrição |
-|-------|-----------|
-| **50** | 1 página (padrão) |
-| **100** | 2 páginas |
-| **200** | 4 páginas |
-| **500** | 10 páginas |
-| **Todos** | Máximo 1000 registros |
+## 🔗 Webhook
 
-A API do Imobzi limita a 50 registros por requisição. O node faz requisições automáticas usando o cursor até atingir o limite desejado.
+O pacote inclui também o node **Imobzi Trigger** para receber webhooks da Imobzi.
 
-## Filtros Disponíveis
+Eventos suportados:
+- contact.created / contact.updated
+- property.created / property.updated
+- deal.created / deal.updated / deal.lost / deal.won
+- lease.created
+- invoice.created / invoice.paid
+- visit.scheduled / visit.cancelled
+- E outros...
 
-### Contatos
+## 📝 Notas Importantes
 
-| Filtro | Tipo | Opções |
-|--------|------|--------|
-| Tipo de Contato | Dropdown | Pessoa, Organização, Lead |
-| Origem | Dropdown | Facebook, Google, Instagram, Site, WhatsApp, etc. |
-| Tags | Texto | Separadas por vírgula |
-| Gestor | ID | ID do usuário responsável |
-| Inativos | Boolean | Incluir ou não inativos |
-| Data Início/Fim | Data | Filtro por período |
+### Paginação
+- Contacts: A API ignora o limite e sempre retorna 50 por página (auto-paginação via cursor)
+- Invoices e Transactions: Usam `next_page` (número) para paginação
+- Outros: Usam `cursor` para paginação
 
-### Imóveis
+### Endpoints Corretos
+- Transações: `/v1/financial/transactions` (com barra!)
+- Contato por ID: `/v1/person/{id}` (não existe `/v1/contact/{id}`)
 
-| Filtro | Tipo | Opções |
-|--------|------|--------|
-| Smart List | Dropdown | 25+ opções (disponíveis, aluguel, venda, etc.) |
-| Finalidade | Dropdown | Residencial, Comercial, Rural |
-| Ordenação | Dropdown | Código, Data, Valor |
-| Todos os Corretores | Boolean | Incluir imóveis de todos |
+### IDs
+- Usuários: STRING (ex: "P1ibK4GFPqZYKIx9e55RpQobt7J2")
+- Contatos/Imóveis: STRING numérica
+- Locações/Pipelines: NUMBER
+- Faturas: STRING UUID
 
-### Smart List (Imóveis)
+## 📄 Licença
 
-```
-all, available, available_reserved, reserved, rent, sale, 
-vacation_rental, site_publish, site_no_publish, without_photos, 
-my_properties, properties_third_party, shared_with_me, 
-shared_with_others, inactives, buildings, with_plaque, 
-out_of_date, new_properties, pending, updated_by_owner, 
-properties_without_owner, exceeding, outdated, updated, 
-without_location, unavailable_properties
-```
+MIT © Bruno Mantovani
 
-## Webhooks
+## 🔗 Links
 
-O node **Imobzi Trigger** permite receber notificações em tempo real sobre eventos no Imobzi.
+- [Imobzi](https://imobzi.com)
+- [n8n](https://n8n.io)
+- [Repositório](https://github.com/redeuno/n8n-nodes-imobzi-latest)
+- [npm](https://www.npmjs.com/package/n8n-nodes-imobzi-latest)
 
-### Eventos Suportados
+## 📞 Suporte
 
-| Categoria | Eventos |
-|-----------|---------|
-| **Contatos** | `contact.created`, `contact.updated` |
-| **Imóveis** | `property.created`, `property.updated` |
-| **Negócios** | `deal.created`, `deal.updated`, `deal.won`, `deal.lost` |
-| **Locações** | `lease.created`, `lease.updated` |
-| **Contratos** | `contract.created`, `contract.updated` |
-| **Faturas** | `invoice.created`, `invoice.paid` |
-| **Visitas** | `visit.scheduled`, `visit.cancelled` |
-| **Tarefas** | `task.created`, `task.updated` |
-
-## Exemplos
-
-### Exemplo 1: Listar Contatos com Filtro
-
-```json
-{
-  "resource": "contact",
-  "operation": "getAll",
-  "recordLimit": 100,
-  "contactOptions": {
-    "contact_type": "person",
-    "media_source": "Site"
-  }
-}
-```
-
-### Exemplo 2: Buscar Contato por CPF
-
-```json
-{
-  "resource": "contact",
-  "operation": "checkExists",
-  "checkExistsBy": "cpf",
-  "checkExistsValue": "123.456.789-00"
-}
-```
-
-### Exemplo 3: Buscar Imóvel por Código
-
-```json
-{
-  "resource": "property",
-  "operation": "getByCode",
-  "code": "326"
-}
-```
-
-### Exemplo 4: Listar Imóveis Disponíveis para Venda
-
-```json
-{
-  "resource": "property",
-  "operation": "getAll",
-  "recordLimit": 200,
-  "propertyOptions": {
-    "smart_list": "sale",
-    "finality": "residential"
-  }
-}
-```
-
-### Exemplo 5: Criar Pessoa
-
-```json
-{
-  "resource": "contact",
-  "operation": "create",
-  "contactTypeCreate": "person",
-  "body": {
-    "fullname": "João Silva",
-    "email": "joao@email.com",
-    "phones": [
-      {
-        "number": "(11) 99999-9999",
-        "type": "mobile"
-      }
-    ]
-  }
-}
-```
-
-## Estrutura de Resposta
-
-### Resposta com Auto-Paginação
-
-```json
-{
-  "contact_id": "123456",
-  "name": "João Silva",
-  "email": "joao@email.com",
-  "_pagination": {
-    "total_fetched": 100,
-    "pages_fetched": 2
-  }
-}
-```
-
-### Resposta Simples
-
-```json
-{
-  "contact_id": "123456",
-  "name": "João Silva",
-  "_metadata": {
-    "cursor": "next_page_cursor",
-    "count": 50
-  }
-}
-```
-
-## Compatibilidade
-
-- **n8n**: Versão mínima 1.0.0
-- **Node.js**: >=20.15
-- **Plano Imobzi**: CRM Business ou Gestão de Locação Real Estate
-- **API Version**: v1
-- **Node Version**: 5
-
-## Links Úteis
-
-* [Documentação da comunidade n8n](https://docs.n8n.io/integrations/#community-nodes)
-* [Documentação da API Imobzi](https://developer.imobzi.com/)
-* [Como funciona a chave de API](https://help.imobzi.com/pt-br/article/como-funciona-a-chave-de-api-1nieky8/)
-* [Repositório GitHub](https://github.com/redeuno/n8n-nodes-imobzi-latest)
-
-## Histórico de Versões
-
-### v1.2.0 (Dezembro 2024) - Atual
-- ✅ **Auto-paginação**: 50, 100, 200, 500, Todos (máx 1000)
-- ✅ **Busca por código**: Pessoa, Lead, Organização, Imóvel, Locação
-- ✅ **Verificar existência**: CPF, Email, Telefone, CNPJ
-- ✅ **Operações separadas por tipo**: Contato com tipo (Pessoa/Org/Lead)
-- ✅ **Campos de data nativos**: dateTime do n8n
-- ✅ **Dropdowns pré-definidos**: Em todos os filtros
-- ✅ **typeVersion: 5**
-
-### v1.1.0 (Dezembro 2024)
-- ✅ URL base corrigida para `https://api.imobzi.app`
-- ✅ Autenticação com header `X-Imobzi-Secret`
-- ✅ Calendário com year/month obrigatórios
-- ✅ Limite máximo de 50 por requisição
-- ✅ Dropdowns básicos
-
-### v1.0.0 (Dezembro 2024)
-- Versão inicial com recursos básicos
+- Issues: [GitHub Issues](https://github.com/redeuno/n8n-nodes-imobzi-latest/issues)
+- Email: bruno@redeuno.com.br
 
 ---
 
-**Criado por**: Bruno Mantovani  
-**Email**: bruno@redeuno.com.br  
-**GitHub**: [redeuno/n8n-nodes-imobzi-latest](https://github.com/redeuno/n8n-nodes-imobzi-latest)  
-**Versão**: 1.2.0  
-**Última atualização**: Dezembro 2024
+**Versão:** 2.0.0  
+**Última atualização:** Dezembro 2024  
+**Testado com:** API Imobzi (101 endpoints testados)
