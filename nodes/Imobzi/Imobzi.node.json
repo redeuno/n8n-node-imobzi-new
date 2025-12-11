@@ -1,6 +1,6 @@
 {
 	"node": "n8n-nodes-imobzi.imobzi",
-	"nodeVersion": "3.0",
+	"nodeVersion": "4.0",
 	"codexVersion": "1.0",
 	"categories": ["Sales", "CRM", "Finance"],
 	"resources": {
