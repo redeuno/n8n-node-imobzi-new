@@ -1,6 +1,6 @@
 {
   "name": "n8n-nodes-imobzi-latest",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Nodes para integração com a API da Imobzi no n8n",
   "keywords": [
     "n8n-community-node-package",
@@ -10,17 +10,17 @@
     "imobiliaria"
   ],
   "license": "MIT",
-  "homepage": "https://github.com/redeuno/n8n-node-imobzi-new",
+  "homepage": "https://github.com/redeuno/n8n-nodes-imobzi-latest",
   "author": {
     "name": "Bruno Mantovani",
     "email": "bruno@redeuno.com.br"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/redeuno/n8n-node-imobzi-new.git"
+    "url": "https://github.com/redeuno/n8n-nodes-imobzi-latest.git"
   },
   "bugs": {
-    "url": "https://github.com/redeuno/n8n-node-imobzi-new/issues"
+    "url": "https://github.com/redeuno/n8n-nodes-imobzi-latest/issues"
   },
   "engines": {
     "node": ">=20.15"

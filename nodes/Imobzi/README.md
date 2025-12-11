@@ -219,8 +219,8 @@ Content-Type: application/json
 
 Para suporte técnico:
 - **Documentação**: https://developer.imobzi.com/
-- **GitHub**: https://github.com/redeuno/n8n-node-imobzi-new
-- **Issues**: https://github.com/redeuno/n8n-node-imobzi-new/issues
+- **GitHub**: https://github.com/redeuno/n8n-nodes-imobzi-latest
+- **Issues**: https://github.com/redeuno/n8n-nodes-imobzi-latest/issues
 
 ---
 

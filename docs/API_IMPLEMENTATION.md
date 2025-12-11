@@ -586,8 +586,8 @@ Para suporte técnico da API da Imobzi:
 - **Suporte**: https://help.imobzi.com/
 
 Para suporte do node n8n:
-- **GitHub**: https://github.com/redeuno/n8n-node-imobzi-new
-- **Issues**: https://github.com/redeuno/n8n-node-imobzi-new/issues
+- **GitHub**: https://github.com/redeuno/n8n-nodes-imobzi-latest
+- **Issues**: https://github.com/redeuno/n8n-nodes-imobzi-latest/issues
 
 ## Recursos Adicionais
 
