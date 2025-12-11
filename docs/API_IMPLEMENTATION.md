@@ -358,8 +358,8 @@ Content-Type: application/json
 - `account_id` - Filtrar por conta
 - `lease_id` - Filtrar por locação
 - `contract_id` - Filtrar por contrato
-- `status` - Status (paid, pending, overdue)
-- `payment_method` - Método de pagamento
+- `status` - Status (pending, paid, overdue, canceled, partially_paid, expired, deleted, all)
+- `payment_method` - Método de pagamento (bank_slip, pix, credit_card)
 - `page` - Número da página
 
 **Estrutura de resposta**:
@@ -597,6 +597,25 @@ Para suporte do node n8n:
 
 ---
 
+## Changelog
+
+### v2.2.0 (Dezembro 2024)
+- ✅ Status de fatura corrigido: `cancelled` → `canceled`
+- ✅ Novas opções de status de fatura: partially_paid, expired, deleted, all
+- ✅ Filtro de método de pagamento adicionado
+- ✅ Sanitização automática de CPF/CNPJ/Telefone
+- ✅ Descrições explicativas nos campos de ID
+- ✅ Avisos sobre limitações da API
+
+### Limitações Conhecidas da API
+
+⚠️ Alguns filtros não funcionam corretamente na API Imobzi:
+- `contact_type` - A API pode ignorar este filtro
+- `finality` - A API pode ignorar este filtro
+- `/v1/property/exists` - Pode retornar resultados incorretos
+
+---
+
 **Criado por**: Bruno Mantovani  
-**Versão**: 1.0.0  
+**Versão**: 2.2.0  
 **Última atualização**: Dezembro 2024

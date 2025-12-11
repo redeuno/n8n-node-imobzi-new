@@ -12,8 +12,8 @@ Node customizado para integração com a **API da Imobzi** no n8n.
 | Recurso | Operações |
 |---------|-----------|
 | **Contato** | Listar, Buscar por ID, Buscar por Código, Verificar Existência |
-| **Imóvel** | Listar, Buscar por ID, Buscar por Código, Estatísticas, Verificar Existência |
-| **Locação** | Listar, Buscar por ID, Buscar por Código |
+| **Imóvel** | Listar, Buscar por ID, Buscar por Código, Estatísticas |
+| **Locação** | Listar, Buscar por ID |
 | **Fatura** | Listar, Buscar por ID |
 | **Funil (Deal)** | Listar (busca plana) |
 | **Funil Por Estágio** | Listar (visão Kanban) |
@@ -92,13 +92,14 @@ Operação: Buscar Por Código
 Código: 326
 ```
 
-### Listar Faturas Pagas
+### Listar Faturas
 
 ```
 Recurso: Fatura
 Operação: Get Many
 Filtros:
-  - Status: Pago
+  - Status: Pago/Pendente/Atrasado/Cancelado
+  - Método de Pagamento: Boleto/PIX/Cartão de Crédito
 ```
 
 ### Listar Calendário
@@ -125,7 +126,7 @@ O node suporta auto-paginação automática. Selecione a quantidade de registros
 ## 📊 Filtros Disponíveis
 
 ### Contato
-- Tipo de Contato (person, organization, lead)
+- Tipo de Contato (person, organization, lead) ⚠️
 - Origem (media_source)
 - Tags
 - Smart List
@@ -134,7 +135,7 @@ O node suporta auto-paginação automática. Selecione a quantidade de registros
 
 ### Imóvel
 - Smart List (available, rent, sale, etc)
-- Finalidade (residential, commercial, rural)
+- Finalidade (residential, commercial, rural) ⚠️
 - Status (available, reserved, unavailable)
 - ID do Corretor
 
@@ -142,10 +143,11 @@ O node suporta auto-paginação automática. Selecione a quantidade de registros
 - Smart List (active, inactive)
 
 ### Fatura
-- Status (pending, paid, overdue, cancelled)
+- Status (pending, paid, overdue, canceled, partially_paid, expired, deleted, all)
+- Método de Pagamento (bank_slip, pix, credit_card)
 
 ### Deal
-- Status (in progress, win, lost, stagnant, etc)
+- Status (in progress, win, lost, stagnant, out_of_date, property_radar, all)
 - ID do Usuário
 - ID do Estágio
 - Mostrar Atividades
@@ -153,6 +155,8 @@ O node suporta auto-paginação automática. Selecione a quantidade de registros
 ### Calendário
 - Tipo de Item (task, visit, whatsapp, call)
 - ID do Usuário
+
+> ⚠️ Alguns filtros podem não funcionar corretamente devido a limitações da API Imobzi
 
 ## 🔗 Webhook
 
@@ -175,7 +179,7 @@ Eventos suportados:
 - Outros: Usam `cursor` para paginação
 
 ### Endpoints Corretos
-- Transações: `/v1/financial/transactions` (com barra!)
+- Transações: `/v1/financial/transactions`
 - Contato por ID: `/v1/person/{id}` (não existe `/v1/contact/{id}`)
 
 ### IDs
@@ -183,6 +187,14 @@ Eventos suportados:
 - Contatos/Imóveis: STRING numérica
 - Locações/Pipelines: NUMBER
 - Faturas: STRING UUID
+
+### Correções v2.2.0
+- ✅ Status de fatura corrigido: `cancelled` → `canceled`
+- ✅ Novas opções de status: partially_paid, expired, deleted, all
+- ✅ Filtro de método de pagamento adicionado
+- ✅ Sanitização automática de CPF/CNPJ/Telefone
+- ✅ Descrições explicativas nos campos de ID
+- ✅ Avisos sobre limitações da API
 
 ## 📄 Licença
 
@@ -192,16 +204,16 @@ MIT © Bruno Mantovani
 
 - [Imobzi](https://imobzi.com)
 - [n8n](https://n8n.io)
-- [Repositório](https://github.com/redeuno/n8n-nodes-imobzi-latest)
+- [Repositório](https://github.com/redeuno/n8n-node-imobzi-new)
 - [npm](https://www.npmjs.com/package/n8n-nodes-imobzi-latest)
 
 ## 📞 Suporte
 
-- Issues: [GitHub Issues](https://github.com/redeuno/n8n-nodes-imobzi-latest/issues)
+- Issues: [GitHub Issues](https://github.com/redeuno/n8n-node-imobzi-new/issues)
 - Email: bruno@redeuno.com.br
 
 ---
 
-**Versão:** 2.0.0  
+**Versão:** 2.2.0  
 **Última atualização:** Dezembro 2024  
 **Testado com:** API Imobzi (101 endpoints testados)

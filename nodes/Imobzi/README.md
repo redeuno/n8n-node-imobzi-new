@@ -2,32 +2,39 @@
 
 Integração completa com a API da Imobzi - Plataforma de Gestão Imobiliária.
 
+## Versão 2.2.0
+
+### Novidades
+- ✅ Status de fatura corrigido: `cancelled` → `canceled`
+- ✅ Novas opções de status: partially_paid, expired, deleted, all
+- ✅ Filtro de método de pagamento adicionado
+- ✅ Sanitização automática de CPF/CNPJ/Telefone
+- ✅ Descrições explicativas nos campos de ID
+- ✅ Avisos sobre limitações da API
+
 ## Funcionalidades
 
 ### Recursos Disponíveis
 
-| Recurso | Descrição | Operações |
-|---------|-----------|-----------|
-| **Contato** | Gerenciar contatos (pessoas e organizações) | Criar, Obter, Listar, Atualizar, Excluir |
-| **Pessoa** | Gerenciar pessoas físicas | Criar, Obter, Listar, Atualizar, Excluir |
-| **Organização** | Gerenciar organizações/empresas | Criar, Obter, Listar, Atualizar, Excluir |
-| **Lead** | Gerenciar leads | Criar, Obter, Listar, Atualizar, Excluir |
-| **Imóvel** | Gerenciar imóveis | Criar, Obter, Listar, Atualizar, Excluir |
-| **Contrato** | Gerenciar contratos de venda | Criar, Obter, Listar, Atualizar, Excluir |
-| **Locação** | Gerenciar contratos de locação | Criar, Obter, Listar, Atualizar, Excluir |
-| **Documento** | Gerenciar documentos | Criar, Obter, Listar, Atualizar, Excluir |
-| **Usuário** | Gerenciar usuários/corretores | Criar, Obter, Listar, Atualizar, Excluir |
-| **Negócio (Deal)** | Gerenciar negócios/oportunidades | Criar, Obter, Listar, Atualizar, Excluir |
-| **Funil (Pipeline)** | Gerenciar estágios do funil | Criar, Obter, Listar, Atualizar, Excluir |
-| **Grupo de Funil** | Gerenciar grupos de funil | Criar, Obter, Listar, Atualizar, Excluir |
-| **Conta Financeira** | Gerenciar contas financeiras | Criar, Obter, Listar, Atualizar, Excluir |
-| **Transação Financeira** | Gerenciar transações | Criar, Obter, Listar, Atualizar, Excluir |
-| **Fatura** | Gerenciar faturas | Criar, Obter, Listar, Atualizar, Excluir |
-| **Categoria Financeira** | Gerenciar categorias | Criar, Obter, Listar, Atualizar, Excluir |
-| **Calendário** | Gerenciar eventos do calendário | Criar, Obter, Listar, Atualizar, Excluir |
-| **Webhook** | Gerenciar webhooks | Criar, Obter, Listar, Atualizar, Excluir |
-| **Integração** | Gerenciar integrações externas | Criar, Obter, Listar, Atualizar, Excluir |
-| **Tipo de Imóvel** | Gerenciar tipos de imóveis | Criar, Obter, Listar, Atualizar, Excluir |
+| Recurso | Operações |
+|---------|-----------|
+| **Contato** | Listar, Buscar por ID, Buscar por Código, Verificar Existência, Criar |
+| **Imóvel** | Listar, Buscar por ID, Buscar por Código, Estatísticas |
+| **Locação** | Listar, Buscar por ID |
+| **Fatura** | Listar, Buscar por ID |
+| **Funil (Deal)** | Listar (busca plana) |
+| **Funil Por Estágio** | Listar (visão Kanban) |
+| **Transação Financeira** | Listar |
+| **Calendário** | Listar (requer ano/mês) |
+| **Documento** | Listar |
+| **Usuário** | Listar |
+| **Estágio (Pipeline)** | Listar |
+| **Grupo de Funil** | Listar |
+| **Tipo de Imóvel** | Listar |
+| **Origem (Media Source)** | Listar |
+| **Tag de Contato** | Listar |
+| **Motivo de Perda** | Listar |
+| **Banco** | Listar |
 
 ## Configuração
 
@@ -52,151 +59,101 @@ Integração completa com a API da Imobzi - Plataforma de Gestão Imobiliária.
 | Endpoint | Recurso |
 |----------|---------|
 | `/v1/contacts` | Contatos |
-| `/v1/persons` | Pessoas |
-| `/v1/organizations` | Organizações |
-| `/v1/leads` | Leads |
+| `/v1/person/{id}` | Pessoa por ID |
+| `/v1/person/code/{code}` | Pessoa por Código |
 | `/v1/properties` | Imóveis |
-| `/v1/contracts` | Contratos |
+| `/v1/property/{id}` | Imóvel por ID |
+| `/v1/property/code/{code}` | Imóvel por Código |
+| `/v1/property/{id}/statistics` | Estatísticas do Imóvel |
 | `/v1/leases` | Locações |
-| `/v1/documents` | Documentos |
-| `/v1/users` | Usuários |
-| `/v1/deals` | Negócios |
-| `/v1/pipelines` | Funis |
-| `/v1/pipeline-groups` | Grupos de Funil |
-| `/v1/financial/accounts` | Contas Financeiras |
-| `/v1/financial/transactions` | Transações |
-| `/v1/financial/categories` | Categorias Financeiras |
+| `/v1/lease/{id}` | Locação por ID |
 | `/v1/invoices` | Faturas |
+| `/v1/invoice/{id}` | Fatura por ID |
+| `/v1/deals/search` | Deals (busca plana) |
+| `/v1/deals` | Deals (Kanban) |
+| `/v1/financial/transactions` | Transações |
 | `/v1/calendar` | Calendário |
-| `/v1/webhooks` | Webhooks |
-| `/v1/integrations` | Integrações |
+| `/v1/users` | Usuários |
+| `/v1/pipelines` | Estágios (Pipeline) |
+| `/v1/pipeline-groups` | Grupos de Funil |
 | `/v1/property-types` | Tipos de Imóvel |
+| `/v1/media-sources` | Origens |
+| `/v1/contacts/tags` | Tags de Contato |
+| `/v1/deal/lost-reason` | Motivos de Perda |
+| `/v1/banks` | Bancos |
+| `/v1/contact/exists` | Verificar Existência |
 
-## Exemplos de Uso
+## Filtros Disponíveis
 
-### Listar Contatos
+### Contato
+| Filtro | Parâmetro | Valores |
+|--------|-----------|---------|
+| Tipo de Contato | `contact_type` | person, organization, lead |
+| Origem | `media_source` | Texto livre (ex: OLX, Site) |
+| Tags | `tags` | Texto livre |
+| Smart List | `smart_list` | with_deals, my_contacts, new_leads, etc |
+| ID do Usuário | `user_id` | String (use Usuário > Get Many) |
+| Busca | `search_text` | Nome, email ou telefone |
 
-```json
-{
-  "resource": "contact",
-  "operation": "getAll",
-  "options": {
-    "limit": 50
-  },
-  "contactOptions": {
-    "contact_type": "person",
-    "tags": "proprietário"
-  }
-}
-```
+### Imóvel
+| Filtro | Parâmetro | Valores |
+|--------|-----------|---------|
+| Smart List | `smart_list` | available, rent, sale, reserved, etc |
+| Finalidade | `finality` | residential, commercial, rural |
+| Status | `status` | available, unavailable, reserved |
+| ID do Corretor | `user_id` | String (use Usuário > Get Many) |
 
-### Criar um Lead
+### Locação
+| Filtro | Parâmetro | Valores |
+|--------|-----------|---------|
+| Smart List | `smart_list` | active, inactive |
 
-```json
-{
-  "resource": "lead",
-  "operation": "create",
-  "body": {
-    "fullname": "João Silva",
-    "email": "joao@email.com",
-    "phones": [
-      {
-        "number": "(11) 99999-9999",
-        "type": "mobile"
-      }
-    ],
-    "media_source": "Site"
-  }
-}
-```
+### Fatura
+| Filtro | Parâmetro | Valores |
+|--------|-----------|---------|
+| Status | `status` | pending, paid, overdue, canceled, partially_paid, expired, deleted, all |
+| Método de Pagamento | `payment_method` | bank_slip, pix, credit_card |
 
-### Buscar Imóvel por ID
+### Deal
+| Filtro | Parâmetro | Valores |
+|--------|-----------|---------|
+| Status | `deal_status` | in progress, win, lost, stagnant, out_of_date, property_radar, all |
+| ID do Usuário | `user_id` | String (use Usuário > Get Many) |
+| ID do Estágio | `pipeline_id` | Number (use Estágio > Get Many) |
+| Mostrar Atividades | `show_activities` | true/false |
 
-```json
-{
-  "resource": "property",
-  "operation": "get",
-  "id": "4550464861896704"
-}
-```
-
-### Listar Locações
-
-```json
-{
-  "resource": "lease",
-  "operation": "getAll",
-  "leaseOptions": {
-    "property_id": "5064445616193536"
-  }
-}
-```
-
-### Listar Transações Financeiras
-
-```json
-{
-  "resource": "financialTransaction",
-  "operation": "getAll",
-  "options": {
-    "start_at": "2025-01-01",
-    "end_at": "2025-12-31"
-  },
-  "transactionOptions": {
-    "status": "paid",
-    "order_by": "desc"
-  }
-}
-```
-
-### Criar Evento no Calendário
-
-```json
-{
-  "resource": "calendar",
-  "operation": "create",
-  "body": {
-    "title": "Visita ao Imóvel",
-    "description": "Visita agendada com cliente",
-    "start_at": "2025-12-15T10:00:00",
-    "end_at": "2025-12-15T11:00:00",
-    "item_type": "visit"
-  }
-}
-```
+### Calendário
+| Filtro | Parâmetro | Valores |
+|--------|-----------|---------|
+| Tipo de Item | `item_type` | task, visit, whatsapp, call |
+| ID do Usuário | `user_id` | String (use Usuário > Get Many) |
 
 ## Paginação
 
-A API usa paginação baseada em cursor. Para obter a próxima página:
+A API usa dois tipos de paginação:
 
-1. Execute a primeira requisição
-2. Capture o `cursor` retornado nos metadados (`_metadata.cursor`)
-3. Use esse cursor na próxima requisição no campo **Opções > Cursor**
+### Cursor (contacts, properties, leases, deals)
+- Retorno inclui `cursor` para próxima página
+- Auto-paginação implementada no node
 
-## Estrutura da Resposta
+### Next Page (invoices, transactions)
+- Retorno inclui `next_page` com número da próxima página
+- Auto-paginação implementada no node
 
-### Para recursos com dataKey (contacts, properties, leases, etc.)
+### Limites
+- Selecione: 50, 100, 200, 500 ou Todos (máx 5000)
+- A API limita a 50 registros por requisição
 
-```json
-{
-  "cursor": "eyJhbGci...",
-  "count": 50,
-  "total": 166,
-  "properties": [
-    { "db_id": "123", "address": "..." },
-    { "db_id": "456", "address": "..." }
-  ]
-}
-```
+## IDs
 
-### Para recursos com array direto (users, pipelines, webhooks, integrations)
-
-```json
-[
-  { "db_id": "123", "fullname": "..." },
-  { "db_id": "456", "fullname": "..." }
-]
-```
+| Tipo | Formato | Exemplo |
+|------|---------|---------|
+| Usuários | String alfanumérica | P1ibK4GFPqZYKIx9e55RpQobt7J2 |
+| Contatos | String numérica | 5352720932798464 |
+| Imóveis | String numérica | 4550464861896704 |
+| Locações | Number | 5987740112388096 |
+| Faturas | String UUID | 536edb56c6cb11f0... |
+| Pipelines | Number | 4584666827849728 |
 
 ## Autenticação
 
@@ -209,6 +166,13 @@ Content-Type: application/json
 
 **Base URL**: `https://api.imobzi.app`
 
+## Limitações Conhecidas da API
+
+⚠️ Alguns filtros não funcionam corretamente na API Imobzi:
+- `contact_type` - A API pode ignorar este filtro
+- `finality` - A API pode ignorar este filtro
+- `/v1/property/exists` - Pode retornar resultados incorretos
+
 ## Documentação Oficial
 
 - [Portal do Desenvolvedor Imobzi](https://developer.imobzi.com/)
@@ -219,11 +183,11 @@ Content-Type: application/json
 
 Para suporte técnico:
 - **Documentação**: https://developer.imobzi.com/
-- **GitHub**: https://github.com/redeuno/n8n-nodes-imobzi-latest
-- **Issues**: https://github.com/redeuno/n8n-nodes-imobzi-latest/issues
+- **GitHub**: https://github.com/redeuno/n8n-node-imobzi-new
+- **Issues**: https://github.com/redeuno/n8n-node-imobzi-new/issues
 
 ---
 
 **Criado por**: Bruno Mantovani  
-**Versão**: 1.0.0  
+**Versão**: 2.2.0  
 **Última atualização**: Dezembro 2024
