@@ -5,6 +5,13 @@ Node customizado para integração com a **API da Imobzi** no n8n.
 [![npm version](https://badge.fury.io/js/n8n-nodes-imobzi-latest.svg)](https://www.npmjs.com/package/n8n-nodes-imobzi-latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
+## 🆕 Novidades v2.10.0
+
+- ✅ **Deal (Lista)**: Agora usa `/v1/deals` com filtros completos
+- ✅ **Filtros de Deal**: Grupo de Funil, Etapa, Status, Tipo, Corretor
+- ✅ **Todos os filtros têm opção "Todos"**
+- ✅ **Output Lista Plana**: Deals extraídos da estrutura Kanban em lista
+
 ## 📋 Recursos Disponíveis
 
 ### Recursos Principais
@@ -160,23 +167,23 @@ O node suporta auto-paginação automática. Selecione a quantidade de registros
 - **✅ Método de Pagamento**: bank_slip, pix, credit_card
 - **✅ Ordenar Por / Ordem**
 
-### Deal (Lista Plana - /v1/deals/search)
-- **⚠️ Corretor**: Dropdown - *Não funciona na API*
-- **⚠️ Estágio**: Dropdown - *Não funciona na API*
-- **Status**: open, in_progress, win, lost, stagnant, out_of_date, property_radar
-- **Tipo**: rent, sale, both, all
-- **⚠️ Obter por ID**: *Bug na API - Retorna erro 500*
+### Deal (Lista) - v2.10.0 ✅ ATUALIZADO
+Agora usa `/v1/deals` com todos os filtros funcionando:
+- **✅ Grupo de Funil**: Todos + 5 grupos
+- **✅ Etapa**: Todas + 7 estágios
+- **✅ Status do Deal**: Todos + 7 status
+- **✅ Tipo de Negócio**: Todos + 4 tipos
+- **✅ Corretor**: Todos + 16 usuários
+- **📤 Output**: Lista plana de deals
 
-### Deal Por Estágio (Kanban - /v1/deals) ✅ RECOMENDADO
-- **✅ Grupo de Funil**: Dropdown com 5 grupos
-  - Geral de Negócios
-  - Captação de Imóveis
-  - Comissões
-  - Gestão de Solicitações
-  - Gestão de Tarefas
-- **✅ Corretor**: Dropdown com 16 usuários (funciona!)
-- **✅ Status do Deal**: all, in_progress, stagnant, out_of_date, win, lost, property_radar
-- **✅ Tipo de Negócio**: all, rent, sale, both
+### Deal Por Estágio (Kanban)
+Mesmos filtros do Deal (Lista):
+- **✅ Grupo de Funil**: Todos + 5 grupos
+- **✅ Etapa**: Todas + 7 estágios (novo!)
+- **✅ Status do Deal**: Todos + 7 status
+- **✅ Tipo de Negócio**: Todos + 4 tipos
+- **✅ Corretor**: Todos + 16 usuários
+- **📤 Output**: Estrutura Kanban (deals agrupados por estágio)
 
 ### Transação Financeira
 - **✅ Data Início / Data Fim**: Período de busca
@@ -238,35 +245,30 @@ Eventos suportados:
 - **Para filtrar Deals**: Use **"Deal Por Estágio"** com `pipeline_group_id`
 - **Para buscar contato por código**: Só funciona para tipo **"Pessoa"**
 
-## 🆕 Novidades v2.9.0
+## 📋 Histórico de Versões
 
-- ✅ **Deal Por Estágio**: Pipeline Groups (5 grupos) + Pipelines (7 estágios)
-- ✅ **Avisos visuais**: Filtros que não funcionam marcados com ⚠️
-- ✅ **Documentação**: Mapeamento completo de filtros da API
-- ✅ **Bugs documentados**: Deal Get by ID, getByCode organization/lead
+### v2.10.0 (Atual)
+- ✅ **Deal (Lista)**: Agora usa `/v1/deals` com todos os filtros
+- ✅ **Filtro de Etapa**: Adicionado em Deal e Deal Por Estágio
+- ✅ **Output Lista Plana**: Deals extraídos da estrutura Kanban
+- ✅ **Todos os filtros têm "Todos"**: Consistência em todos os nodes
 
-### Versões anteriores
+### v2.9.0
+- Deal Por Estágio: Pipeline Groups (5 grupos) + Pipelines (7 estágios)
+- Avisos visuais: Filtros que não funcionam marcados com ⚠️
+- Documentação: Mapeamento completo de filtros da API
 
-**v2.8.0:**
+### v2.8.0
 - Análise completa de todos os filtros da API
 - Documento de mapeamento consolidado
 
-**v2.6.0:**
+### v2.6.0
 - Transações Financeiras: 7 filtros completos
-- CRUD Contato: Create, Update, Delete
-- CRUD Imóvel: Create, Update, Delete
-- CRUD Deal: Create, Update
+- CRUD Contato, Imóvel, Deal
 
-**v2.5.0:**
-- Calendar corrigido: search_all=true + holiday_year
-- 57 Tags em dropdown
-- 38 Origens em dropdown
-- 16 Usuários com IDs reais
-- Smart Lists completas
-
-**v2.4.0:**
-- Período pré-definido em faturas
-- CPF/CNPJ aceita formatação
+### v2.5.0
+- Calendar corrigido
+- 57 Tags, 38 Origens, 16 Usuários em dropdowns
 
 ## 📄 Licença
 
@@ -286,6 +288,6 @@ MIT © Bruno Mantovani
 
 ---
 
-**Versão:** 2.9.0  
+**Versão:** 2.10.0  
 **Última atualização:** 12 Dezembro 2025  
-**Testado com:** API Imobzi (mapeamento completo - docs/MAPEAMENTO_FILTROS_API_IMOBZI.md)
+**Documentação:** [docs/ESTRUTURA_NODES_IMOBZI.md](docs/ESTRUTURA_NODES_IMOBZI.md)

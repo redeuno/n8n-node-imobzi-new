@@ -9,18 +9,22 @@ import type {
 import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
 
 /**
- * n8n-nodes-imobzi-latest v2.9.0
+ * n8n-nodes-imobzi-latest v2.10.0
  * Configuração dos recursos da API Imobzi
  * Baseado em testes reais COMPLETOS da API - 12/12/2025
  *
+ * Correções v2.10.0:
+ * - Deal (Lista): Agora usa /v1/deals e extrai lista plana
+ * - Deal (Lista): Filtros completos: grupo, etapa, status, tipo, corretor
+ * - Deal Por Estágio: Filtro de Etapa (pipeline_id) adicionado
+ * - Todos os filtros têm opção "Todos"
+ *
  * Correções v2.9.0:
  * - Deals por Estágio: pipeline_group_id, deal_status, deal_type, user_id
- * - Deals Busca: Avisos sobre filtros não confirmados
  * - Contatos: Aviso em user_id (não funciona na API)
  * - Imóveis: Avisos em finality e status (não confirmados)
  * - Buscar por Código: Aviso que só funciona para person
  * - Deal Get by ID: Aviso de bug na API (erro 500)
- * - Removido show_activities de Deals (não funciona)
  *
  * Filtros confirmados funcionando:
  * - Contatos: smart_list, media_source, tags
@@ -28,6 +32,7 @@ import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
  * - Calendário: search_all, calendar_type, holiday_year, user_id, item_type
  * - Faturas: status, payment_method, periodo, start_at, end_at
  * - Transações: filter_type, status, account_id, start_at, end_at
+ * - Deals: pipeline_group_id, pipeline_id, deal_status, deal_type, user_id
  */
 interface ResourceConfig {
 	endpoint: string;
@@ -62,9 +67,9 @@ const resourceConfig: { [resource: string]: ResourceConfig } = {
 		paginationType: 'next_page',
 	},
 	deal: {
-		endpoint: '/v1/deals/search',
-		dataKey: 'deals',
-		paginationType: 'cursor',
+		endpoint: '/v1/deals',
+		dataKey: 'deals', // Será extraído da estrutura kanban
+		paginationType: 'none', // /v1/deals não pagina, retorna tudo
 	},
 	dealByStage: {
 		endpoint: '/v1/deals',
@@ -132,9 +137,9 @@ export class Imobzi implements INodeType {
 		name: 'imobzi',
 		icon: 'file:imobzi.svg',
 		group: ['transform'],
-		version: 12, // v2.9.0
+		version: 13, // v2.10.0
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-		description: 'Integração com a API da Imobzi v2.9.0 - Deals reestruturado com Pipeline Groups',
+		description: 'Integração com a API da Imobzi v2.10.0 - Deals com filtros completos',
 		defaults: {
 			name: 'Imobzi',
 		},
@@ -889,8 +894,7 @@ export class Imobzi implements INodeType {
 			},
 
 			// ==================== DEAL FILTERS ====================
-			// ⚠️ NOTA: /v1/deals/search (lista plana) tem filtros limitados
-			// Para filtrar corretamente, use "Deal Por Estágio" com pipeline_group_id
+			// v2.10.0: Agora usa /v1/deals com filtros completos
 			{
 				displayName: 'Filtros',
 				name: 'dealFilters',
@@ -903,13 +907,14 @@ export class Imobzi implements INodeType {
 						operation: ['getAll'],
 					},
 				},
-				description: '⚠️ Para filtrar deals com precisão, use "Deal Por Estágio" que permite selecionar o grupo de funil',
+				description: 'Filtros para buscar deals. O resultado será uma lista plana de todos os deals.',
 				options: [
 					{
-						displayName: '⚠️ Corretor (Não Funciona)',
+						displayName: 'Corretor',
 						name: 'user_id',
 						type: 'options',
 						default: '',
+						description: 'Filtrar por corretor responsável',
 						options: [
 							{ name: 'Antonio Carlos', value: 'P1ibK4GFPqZYKIx9e55RpQobt7J2' },
 							{ name: 'Bruno Mantovani', value: 'SYkMqS5aInfpP1p9m9MV0AufW0p1' },
@@ -929,13 +934,13 @@ export class Imobzi implements INodeType {
 							{ name: 'Todos Os Corretores', value: '' },
 							{ name: 'Yan Caliel', value: 'inijJ4kWVtfU6R4oN4nP5odF6SE3' },
 						],
-						description: '⚠️ Este filtro NÃO funciona na API /deals/search. Use "Deal Por Estágio" para filtrar por corretor.',
 					},
 					{
-						displayName: '⚠️ Estágio (Não Funciona)',
+						displayName: 'Etapa',
 						name: 'pipeline_id',
 						type: 'options',
 						default: '',
+						description: 'Filtrar por etapa do funil',
 						options: [
 							{ name: 'Em Atendimento', value: '6481696604553216' },
 							{ name: 'Fechamento', value: '4677659379367936' },
@@ -943,18 +948,32 @@ export class Imobzi implements INodeType {
 							{ name: 'Negociação', value: '6507246727987200' },
 							{ name: 'Oportunidades', value: '4584666827849728' },
 							{ name: 'Qualificação E Interesse', value: '6005926736691200' },
-							{ name: 'Todos Os Estágios', value: '' },
+							{ name: 'Todas As Etapas', value: '' },
 							{ name: 'Visita / Apresentação', value: '5381346821144576' },
 						],
-						description: '⚠️ Este filtro NÃO funciona na API /deals/search. Use "Deal Por Estágio" para filtrar por pipeline.',
 					},
 					{
-						displayName: 'Status',
+						displayName: 'Grupo De Funil',
+						name: 'pipeline_group_id',
+						type: 'options',
+						default: '',
+						description: 'Filtrar por grupo de funil',
+						options: [
+							{ name: 'Captação De Imóveis', value: '5370013421666304' },
+							{ name: 'Comissões', value: '6405034089644032' },
+							{ name: 'Geral De Negócios', value: '5675099632959488' },
+							{ name: 'Gestão De Solicitações', value: '6419593693233152' },
+							{ name: 'Gestão De Tarefas', value: '6594235603091456' },
+							{ name: 'Todos Os Grupos', value: '' },
+						],
+					},
+					{
+						displayName: 'Status Do Deal',
 						name: 'deal_status',
 						type: 'options',
 						default: 'all',
+						description: 'Filtrar por status do deal',
 						options: [
-							{ name: 'Aberto', value: 'open' },
 							{ name: 'Desatualizado', value: 'out_of_date' },
 							{ name: 'Em Progresso', value: 'in_progress' },
 							{ name: 'Estagnado', value: 'stagnant' },
@@ -963,25 +982,25 @@ export class Imobzi implements INodeType {
 							{ name: 'Radar De Imóveis', value: 'property_radar' },
 							{ name: 'Todos', value: 'all' },
 						],
-						description: 'Filtrar por status do deal (não confirmado na API)',
 					},
 					{
-						displayName: 'Tipo',
+						displayName: 'Tipo De Negócio',
 						name: 'deal_type',
 						type: 'options',
 						default: 'all',
+						description: 'Filtrar por tipo de negócio',
 						options: [
 							{ name: 'Locação', value: 'rent' },
 							{ name: 'Todos', value: 'all' },
 							{ name: 'Venda', value: 'sale' },
 							{ name: 'Venda E Locação', value: 'both' },
 						],
-						description: 'Filtrar por tipo de negócio (não confirmado na API)',
 					},
 				],
-					},
+			},
 
 			// ==================== DEAL BY STAGE FILTERS ====================
+			// v2.10.0: Adicionado filtro de Etapa (pipeline_id)
 			{
 				displayName: 'Filtros',
 				name: 'dealByStageFilters',
@@ -994,12 +1013,14 @@ export class Imobzi implements INodeType {
 						operation: ['getAll'],
 					},
 				},
+				description: 'Filtros para visão Kanban. Retorna deals agrupados por estágio.',
 				options: [
 					{
 						displayName: 'Corretor',
 						name: 'user_id',
 						type: 'options',
 						default: '',
+						description: 'Filtrar por corretor responsável',
 						options: [
 							{ name: 'Antonio Carlos', value: 'P1ibK4GFPqZYKIx9e55RpQobt7J2' },
 							{ name: 'Bruno Mantovani', value: 'SYkMqS5aInfpP1p9m9MV0AufW0p1' },
@@ -1019,13 +1040,30 @@ export class Imobzi implements INodeType {
 							{ name: 'Todos Os Corretores', value: '' },
 							{ name: 'Yan Caliel', value: 'inijJ4kWVtfU6R4oN4nP5odF6SE3' },
 						],
-						description: 'Filtrar por corretor responsável. ✅ Funciona na visão por estágio.',
+					},
+					{
+						displayName: 'Etapa',
+						name: 'pipeline_id',
+						type: 'options',
+						default: '',
+						description: 'Filtrar por etapa específica do funil',
+						options: [
+							{ name: 'Em Atendimento', value: '6481696604553216' },
+							{ name: 'Fechamento', value: '4677659379367936' },
+							{ name: 'Follow UP', value: '5944296774565888' },
+							{ name: 'Negociação', value: '6507246727987200' },
+							{ name: 'Oportunidades', value: '4584666827849728' },
+							{ name: 'Qualificação E Interesse', value: '6005926736691200' },
+							{ name: 'Todas As Etapas', value: '' },
+							{ name: 'Visita / Apresentação', value: '5381346821144576' },
+						],
 					},
 					{
 						displayName: 'Grupo De Funil',
 						name: 'pipeline_group_id',
 						type: 'options',
 						default: '',
+						description: 'Filtrar por grupo de funil',
 						options: [
 							{ name: 'Captação De Imóveis', value: '5370013421666304' },
 							{ name: 'Comissões', value: '6405034089644032' },
@@ -1034,13 +1072,13 @@ export class Imobzi implements INodeType {
 							{ name: 'Gestão De Tarefas', value: '6594235603091456' },
 							{ name: 'Todos Os Grupos', value: '' },
 						],
-						description: 'Selecione o grupo de funil (Kanban). ✅ Funciona.',
 					},
 					{
 						displayName: 'Status Do Deal',
 						name: 'deal_status',
 						type: 'options',
 						default: 'all',
+						description: 'Filtrar por status do deal',
 						options: [
 							{ name: 'Desatualizado', value: 'out_of_date' },
 							{ name: 'Em Progresso', value: 'in_progress' },
@@ -1050,20 +1088,19 @@ export class Imobzi implements INodeType {
 							{ name: 'Radar De Imóveis', value: 'property_radar' },
 							{ name: 'Todos', value: 'all' },
 						],
-						description: 'Filtrar por status do deal. ✅ Funciona.',
 					},
 					{
 						displayName: 'Tipo De Negócio',
 						name: 'deal_type',
 						type: 'options',
 						default: 'all',
+						description: 'Filtrar por tipo de negócio',
 						options: [
 							{ name: 'Locação', value: 'rent' },
 							{ name: 'Todos', value: 'all' },
 							{ name: 'Venda', value: 'sale' },
 							{ name: 'Venda E Locação', value: 'both' },
 						],
-						description: 'Filtrar por tipo de negócio. ✅ Funciona.',
 					},
 				],
 			},
@@ -1597,8 +1634,35 @@ export class Imobzi implements INodeType {
 					} else if (Array.isArray(response)) {
 						// Array direto (users, banks, pipelines, media-sources)
 						data = response;
+					} else if (resource === 'deal') {
+						// v2.10.0: Deal (Lista) - Extrair deals de todos os estágios em lista plana
+						const allDeals: IDataObject[] = [];
+						for (const key of Object.keys(response)) {
+							// Ignorar campos de metadados (total_deals, total_values, etc)
+							if (key === 'total_deals' || key === 'total_values' || key === 'total_pages' || key === 'cursor_all_stages') {
+								continue;
+							}
+							const stageData = response[key] as IDataObject;
+							if (stageData && stageData.deals && Array.isArray(stageData.deals)) {
+								// Adicionar informação do estágio em cada deal
+								for (const deal of stageData.deals as IDataObject[]) {
+									deal.stage_id = key;
+									deal.stage_name = stageData.stage_name || 'N/A';
+									allDeals.push(deal);
+								}
+							}
+						}
+						// Retornar lista plana de deals
+						for (const item of allDeals) {
+							returnData.push({ json: item, pairedItem: itemIndex });
+						}
+						continue;
+					} else if (resource === 'dealByStage') {
+						// dealByStage retorna estrutura Kanban (objeto com estágios)
+						returnData.push({ json: response, pairedItem: itemIndex });
+						continue;
 					} else {
-						// Objeto especial (dealByStage retorna estrutura diferente)
+						// Outro objeto especial
 						returnData.push({ json: response, pairedItem: itemIndex });
 						continue;
 					}
