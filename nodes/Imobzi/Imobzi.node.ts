@@ -9,18 +9,15 @@ import type {
 import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
 
 /**
- * n8n-nodes-imobzi-latest v2.5.0
+ * n8n-nodes-imobzi-latest v2.6.0
  * Configuração dos recursos da API Imobzi
  * Baseado em mapeamento completo da API - 12/12/2025
  *
- * Correções v2.5.0:
- * - Calendar: search_all=true + item_type completo
- * - Tags: 57 opções (sistema + personalizadas)
- * - Media Sources: 38 opções
- * - Usuários: dropdown com IDs reais
- * - Smart Lists: atualizadas (Imóveis, Contatos, Locação)
- * - Deals: deal_type + deal_status corrigidos
- * - CRUD: Create para Contact, Property, Deal
+ * Correções v2.6.0:
+ * - Filtros corrigidos para todos os recursos
+ * - Transações Financeiras: filtros completos
+ * - CRUD: Create, Update, Delete para Contact, Property, Deal
+ * - Todos os dropdowns com valores corretos
  */
 interface ResourceConfig {
 	endpoint: string;
@@ -120,9 +117,9 @@ export class Imobzi implements INodeType {
 		name: 'imobzi',
 		icon: 'file:imobzi.svg',
 		group: ['transform'],
-		version: 8, // v2.5.0
+		version: 9, // v2.6.0
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-		description: 'Integração com a API da Imobzi v2.5.0',
+		description: 'Integração com a API da Imobzi v2.6.0',
 		defaults: {
 			name: 'Imobzi',
 		},
@@ -175,8 +172,10 @@ export class Imobzi implements INodeType {
 					},
 				},
 				options: [
+					{ name: 'Atualizar', value: 'update', action: 'Atualizar contato' },
 					{ name: 'Buscar Por Código', value: 'getByCode', action: 'Buscar contato por c digo' },
 					{ name: 'Criar', value: 'create', action: 'Criar contato' },
+					{ name: 'Deletar', value: 'delete', action: 'Deletar contato' },
 					{ name: 'Get Many', value: 'getAll', action: 'Listar contatos' },
 					{ name: 'Obter Por ID', value: 'get', action: 'Obter contato por ID' },
 					{ name: 'Verificar Existência', value: 'checkExists', action: 'Verificar se contato existe' },
@@ -196,8 +195,10 @@ export class Imobzi implements INodeType {
 					},
 				},
 				options: [
+					{ name: 'Atualizar', value: 'update', action: 'Atualizar im vel' },
 					{ name: 'Buscar Por Código', value: 'getByCode', action: 'Buscar im vel por c digo' },
 					{ name: 'Criar', value: 'create', action: 'Criar im vel' },
+					{ name: 'Deletar', value: 'delete', action: 'Deletar im vel' },
 					{ name: 'Estatísticas', value: 'statistics', action: 'Obter estat sticas do im vel' },
 					{ name: 'Get Many', value: 'getAll', action: 'Listar im veis' },
 					{ name: 'Obter Por ID', value: 'get', action: 'Obter im vel por id' },
@@ -254,8 +255,10 @@ export class Imobzi implements INodeType {
 					},
 				},
 				options: [
+					{ name: 'Atualizar', value: 'update', action: 'Atualizar deal' },
 					{ name: 'Criar', value: 'create', action: 'Criar deal' },
 					{ name: 'Get Many', value: 'getAll', action: 'Buscar deals lista plana' },
+					{ name: 'Obter Por ID', value: 'get', action: 'Obter deal por ID' },
 				],
 				default: 'getAll',
 			},
@@ -287,15 +290,15 @@ export class Imobzi implements INodeType {
 				description: 'ID do registro',
 				displayOptions: {
 					show: {
-						operation: ['get', 'statistics'],
+						operation: ['get', 'statistics', 'update', 'delete'],
 					},
 					hide: {
 						resource: ['contact'],
+					},
 				},
 			},
-			},
 
-			// ==================== CONTACT - TYPE FOR GET ====================
+			// ==================== CONTACT - TYPE FOR OPERATIONS ====================
 			{
 				displayName: 'Tipo De Contato',
 				name: 'contactType',
@@ -311,7 +314,7 @@ export class Imobzi implements INodeType {
 				displayOptions: {
 					show: {
 						resource: ['contact'],
-						operation: ['get', 'create', 'getByCode'],
+						operation: ['get', 'create', 'getByCode', 'update', 'delete'],
 					},
 				},
 			},
@@ -327,7 +330,7 @@ export class Imobzi implements INodeType {
 				displayOptions: {
 					show: {
 						resource: ['contact'],
-						operation: ['get'],
+						operation: ['get', 'update', 'delete'],
 					},
 				},
 			},
@@ -1081,7 +1084,88 @@ export class Imobzi implements INodeType {
 				description: 'Filtros do calendário. Por padrão busca todos os usuários.',
 			},
 
-			// ==================== CREATE BODY ====================
+			// ==================== TRANSACTION FILTERS ====================
+			{
+				displayName: 'Filtros',
+				name: 'transactionFilters',
+				type: 'collection',
+				placeholder: 'Adicionar Filtro',
+				default: {},
+				displayOptions: {
+					show: {
+						resource: ['transaction'],
+						operation: ['getAll'],
+					},
+				},
+				options: [
+					{
+						displayName: 'Conta Bancária',
+						name: 'account_id',
+						type: 'string',
+						default: '',
+						description: 'ID da conta bancária. Use "Banco > Get Many" para listar.',
+					},
+					{
+						displayName: 'Data Fim',
+						name: 'end_at',
+						type: 'dateTime',
+						default: '',
+						description: 'Data final do período',
+					},
+					{
+						displayName: 'Data Início',
+						name: 'start_at',
+						type: 'dateTime',
+						default: '',
+						description: 'Data inicial do período',
+					},
+					{
+						displayName: 'Ordem',
+						name: 'sort_by',
+						type: 'options',
+						default: 'desc',
+						options: [
+							{ name: 'Crescente', value: 'asc' },
+							{ name: 'Decrescente', value: 'desc' },
+						],
+					},
+					{
+						displayName: 'Ordenar Por',
+						name: 'order_by',
+						type: 'options',
+						default: 'due_date',
+						options: [
+							{ name: 'Data De Pagamento', value: 'paid_at' },
+							{ name: 'Data De Vencimento', value: 'due_date' },
+							{ name: 'Valor', value: 'amount' },
+						],
+					},
+					{
+						displayName: 'Status',
+						name: 'status',
+						type: 'options',
+						default: '',
+						options: [
+							{ name: 'Pago', value: 'paid' },
+							{ name: 'Pendente', value: 'pending' },
+							{ name: 'Todos', value: '' },
+						],
+					},
+					{
+						displayName: 'Tipo',
+						name: 'type',
+						type: 'options',
+						default: '',
+						options: [
+							{ name: 'Despesa', value: 'expense' },
+							{ name: 'Receita', value: 'income' },
+							{ name: 'Todos', value: '' },
+						],
+					},
+				],
+			},
+
+			// ==================== CREATE/UPDATE BODY ====================
 			{
 				displayName: 'Dados (JSON)',
 				name: 'body',
@@ -1090,7 +1174,7 @@ export class Imobzi implements INodeType {
 				description: 'Dados do registro em formato JSON',
 				displayOptions: {
 					show: {
-						operation: ['create'],
+						operation: ['create', 'update'],
 					},
 				},
 			},
@@ -1105,7 +1189,7 @@ export class Imobzi implements INodeType {
 			try {
 				const resource = this.getNodeParameter('resource', itemIndex) as string;
 				const operation = this.getNodeParameter('operation', itemIndex) as string;
-				
+
 				const config = resourceConfig[resource];
 				if (!config) {
 					throw new NodeOperationError(this.getNode(), `Recurso "${resource}" não suportado!`, { itemIndex });
@@ -1183,6 +1267,37 @@ export class Imobzi implements INodeType {
 						break;
 					}
 
+					case 'update': {
+						method = 'POST'; // API Imobzi usa POST para update (não PATCH)
+						if (resource === 'contact') {
+							const contactType = this.getNodeParameter('contactType', itemIndex) as string;
+							const contactId = this.getNodeParameter('contactId', itemIndex) as string;
+							endpoint = `/v1/${contactType}/${contactId}`;
+						} else if (resource === 'property') {
+							const propId = this.getNodeParameter('id', itemIndex) as string;
+							endpoint = `/v1/property/${propId}`;
+						} else if (resource === 'deal') {
+							const dealId = this.getNodeParameter('id', itemIndex) as string;
+							endpoint = `/v1/deal/${dealId}`;
+						}
+						const updateBodyJson = this.getNodeParameter('body', itemIndex) as string;
+						body = JSON.parse(updateBodyJson);
+						break;
+					}
+
+					case 'delete': {
+						method = 'DELETE';
+						if (resource === 'contact') {
+							const contactType = this.getNodeParameter('contactType', itemIndex) as string;
+							const contactId = this.getNodeParameter('contactId', itemIndex) as string;
+							endpoint = `/v1/${contactType}/${contactId}`;
+						} else if (resource === 'property') {
+							const propId = this.getNodeParameter('id', itemIndex) as string;
+							endpoint = `/v1/property/${propId}`;
+						}
+						break;
+					}
+
 					case 'getAll': {
 						// Calendário: campos obrigatórios + novos parâmetros
 						if (resource === 'calendar') {
@@ -1191,22 +1306,22 @@ export class Imobzi implements INodeType {
 							qs.year = year;
 							qs.month = month;
 							qs.calendar_type = 'normal';
-							
+
 							// Processar filtros do calendário
 							const calFilters = this.getNodeParameter('calendarFilters', itemIndex, {}) as IDataObject;
-							
+
 							// Usuário: todos ou específico
 							if (calFilters.user_filter === 'all' || !calFilters.user_filter) {
 								qs.search_all = 'true';
 							} else {
 								qs.user_id = calFilters.user_filter;
 							}
-							
+
 							// Feriados
 							if (calFilters.show_holidays !== false) {
 								qs.holiday_year = year;
 							}
-							
+
 							// Tipo de item
 							if (calFilters.item_type && calFilters.item_type !== '') {
 								qs.item_type = calFilters.item_type;
@@ -1222,17 +1337,18 @@ export class Imobzi implements INodeType {
 							deal: 'dealFilters',
 							dealByStage: 'dealByStageFilters',
 							calendar: 'calendarFilters',
+							transaction: 'transactionFilters',
 						};
 
 						const filtersKey = filtersMap[resource];
 						if (filtersKey) {
 							const filters = this.getNodeParameter(filtersKey, itemIndex, {}) as IDataObject;
-							
+
 							// Processar período de faturas
 							if (resource === 'invoice' && filters.periodo) {
 								const hoje = new Date();
 								const hojeStr = hoje.toISOString().split('T')[0];
-								
+
 								if (filters.periodo === 'custom') {
 									// Usar datas personalizadas
 									if (filters.start_at) {
@@ -1259,7 +1375,7 @@ export class Imobzi implements INodeType {
 								delete filters.start_at;
 								delete filters.end_at;
 							}
-							
+
 							for (const [key, value] of Object.entries(filters)) {
 								if (value !== '' && value !== undefined && value !== null && key !== 'periodo') {
 									// Formatar datas para YYYY-MM-DD
@@ -1448,4 +1564,4 @@ export class Imobzi implements INodeType {
 
 		return [returnData];
 	}
-} 
+}
