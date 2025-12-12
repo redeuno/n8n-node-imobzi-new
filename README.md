@@ -135,53 +135,61 @@ O node suporta auto-paginação automática. Selecione a quantidade de registros
 - 500 registros
 - Todos (máx 5000)
 
-## 📊 Filtros Disponíveis (v2.6.0)
+## 📊 Filtros Disponíveis (v2.9.0)
 
 ### Contato
-- **Usuário Responsável**: Dropdown com 16 usuários
-- **Origem**: Dropdown com 38 origens
-- **Tags**: Dropdown com 57 tags (sistema + personalizadas)
-- **Smart List**: 12 opções (all, my_contacts, new_leads, etc.)
-- **Tipo de Contato**: person, organization, lead
+- **⚠️ Usuário Responsável**: Dropdown com 16 usuários - *Não funciona na API*
+- **✅ Origem**: Dropdown com 38 origens
+- **✅ Tags**: Dropdown com 57 tags (sistema + personalizadas)
+- **✅ Smart List**: 12 opções (all, my_contacts, new_leads, etc.)
+- **⚠️ Tipo de Contato**: person ✅, lead ⚠️, organization ❌
 - **Busca**: Por nome, email ou telefone
 
 ### Imóvel
-- **Corretor**: Dropdown com 16 usuários
-- **Smart List**: 16 opções (available, rent, sale, without_photos, etc.)
-- **Status**: available, reserved, unavailable
-- **Finalidade**: residential, commercial, rural
+- **✅ Corretor**: Dropdown com 16 usuários
+- **✅ Smart List**: 16 opções (available, rent, sale, without_photos, etc.)
+- **⚠️ Status**: available, reserved, unavailable - *Não confirmado*
+- **⚠️ Finalidade**: residential, commercial, rural - *Não confirmado*
 
 ### Locação
-- **Smart List**: 9 opções (active, inactive, expiring, finished, etc.)
+- **✅ Smart List**: 9 opções (active, inactive, expiring, finished, etc.)
 
 ### Fatura
-- **Período**: 15, 30, 60, 90 dias, Personalizado ou Todos
-- **Status**: pending, paid, overdue, canceled, partially_paid, expired, deleted, all
-- **Método de Pagamento**: bank_slip, pix, credit_card
+- **✅ Período**: 15, 30, 60, 90 dias, Personalizado ou Todos
+- **✅ Status**: pending, paid, overdue, canceled, partially_paid, expired, deleted, all
+- **✅ Método de Pagamento**: bank_slip, pix, credit_card
+- **✅ Ordenar Por / Ordem**
 
-### Deal
-- **Corretor**: Dropdown com 16 usuários
-- **Estágio**: Dropdown com 7 estágios
+### Deal (Lista Plana - /v1/deals/search)
+- **⚠️ Corretor**: Dropdown - *Não funciona na API*
+- **⚠️ Estágio**: Dropdown - *Não funciona na API*
 - **Status**: open, in_progress, win, lost, stagnant, out_of_date, property_radar
 - **Tipo**: rent, sale, both, all
-- **Mostrar Atividades**: Sim/Não
+- **⚠️ Obter por ID**: *Bug na API - Retorna erro 500*
 
-### Deal Por Estágio
-- **Corretor**: Dropdown com 16 usuários
-- **Grupo de Funil**: Dropdown com 5 grupos
+### Deal Por Estágio (Kanban - /v1/deals) ✅ RECOMENDADO
+- **✅ Grupo de Funil**: Dropdown com 5 grupos
+  - Geral de Negócios
+  - Captação de Imóveis
+  - Comissões
+  - Gestão de Solicitações
+  - Gestão de Tarefas
+- **✅ Corretor**: Dropdown com 16 usuários (funciona!)
+- **✅ Status do Deal**: all, in_progress, stagnant, out_of_date, win, lost, property_radar
+- **✅ Tipo de Negócio**: all, rent, sale, both
 
-### Transação Financeira (NOVO v2.6.0)
-- **Data Início / Data Fim**: Período de busca
-- **Status**: Pago, Pendente, Todos
-- **Tipo**: Receita, Despesa, Todos
-- **Conta Bancária**: ID da conta
-- **Ordenar Por**: Data de Vencimento, Data de Pagamento, Valor
-- **Ordem**: Crescente, Decrescente
+### Transação Financeira
+- **✅ Data Início / Data Fim**: Período de busca
+- **✅ Status**: Pago, Pendente, Todos
+- **✅ Tipo**: Receita, Despesa, Transferência
+- **✅ Conta Bancária**: Dropdown dinâmico
+- **✅ Ordenar Por**: Data de Vencimento, Data de Pagamento, Valor
+- **✅ Ordem**: Crescente, Decrescente
 
 ### Calendário
-- **Usuário**: Dropdown (Todos ou específico)
-- **Tipo de Item**: task, visit, whatsapp, call
-- **Exibir Feriados**: Sim/Não
+- **✅ Usuário**: Dropdown (Todos ou específico)
+- **✅ Tipo de Item**: task, visit, whatsapp, call
+- **✅ Exibir Feriados**: Sim/Não
 
 ## 🔗 Webhook
 
@@ -214,15 +222,40 @@ Eventos suportados:
 - Locações/Pipelines: NUMBER
 - Faturas: STRING UUID
 
-## 🆕 Novidades v2.6.0
+## ⚠️ Limitações Conhecidas da API (v2.9.0)
 
-- ✅ **Transações Financeiras**: 7 filtros completos
-- ✅ **CRUD Contato**: Create, Update, Delete
-- ✅ **CRUD Imóvel**: Create, Update, Delete
-- ✅ **CRUD Deal**: Create, Update, Get by ID
-- ✅ **Filtros testados**: Todos validados na API
+| Endpoint | Problema |
+|----------|----------|
+| `/v1/contacts?user_id=` | Não filtra - sempre retorna todos |
+| `/v1/deals/search?user_id=` | Não filtra |
+| `/v1/deals/search?pipeline_id=` | Não filtra |
+| `/v1/deal/{id}` | Bug - Retorna erro 500 |
+| `/v1/organization/code/{code}` | Retorna 404 |
+| `/v1/lead/code/{code}` | Retorna 404 |
+| `/v1/property/exists?code=` | Retorna dados incorretos |
+
+### Soluções
+- **Para filtrar Deals**: Use **"Deal Por Estágio"** com `pipeline_group_id`
+- **Para buscar contato por código**: Só funciona para tipo **"Pessoa"**
+
+## 🆕 Novidades v2.9.0
+
+- ✅ **Deal Por Estágio**: Pipeline Groups (5 grupos) + Pipelines (7 estágios)
+- ✅ **Avisos visuais**: Filtros que não funcionam marcados com ⚠️
+- ✅ **Documentação**: Mapeamento completo de filtros da API
+- ✅ **Bugs documentados**: Deal Get by ID, getByCode organization/lead
 
 ### Versões anteriores
+
+**v2.8.0:**
+- Análise completa de todos os filtros da API
+- Documento de mapeamento consolidado
+
+**v2.6.0:**
+- Transações Financeiras: 7 filtros completos
+- CRUD Contato: Create, Update, Delete
+- CRUD Imóvel: Create, Update, Delete
+- CRUD Deal: Create, Update
 
 **v2.5.0:**
 - Calendar corrigido: search_all=true + holiday_year
@@ -243,16 +276,16 @@ MIT © Bruno Mantovani
 
 - [Imobzi](https://imobzi.com)
 - [n8n](https://n8n.io)
-- [Repositório](https://github.com/redeuno/n8n-node-imobzi-new)
+- [Repositório](https://github.com/redeuno/n8n-nodes-imobzi-latest)
 - [npm](https://www.npmjs.com/package/n8n-nodes-imobzi-latest)
 
 ## 📞 Suporte
 
-- Issues: [GitHub Issues](https://github.com/redeuno/n8n-node-imobzi-new/issues)
+- Issues: [GitHub Issues](https://github.com/redeuno/n8n-nodes-imobzi-latest/issues)
 - Email: bruno@redeuno.com.br
 
 ---
 
-**Versão:** 2.6.0  
-**Última atualização:** Dezembro 2024  
-**Testado com:** API Imobzi (mapeamento completo)
+**Versão:** 2.9.0  
+**Última atualização:** 12 Dezembro 2025  
+**Testado com:** API Imobzi (mapeamento completo - docs/MAPEAMENTO_FILTROS_API_IMOBZI.md)
