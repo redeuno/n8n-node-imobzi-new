@@ -9,16 +9,19 @@ import type {
 import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
 
 /**
- * n8n-nodes-imobzi-latest v2.7.0
+ * n8n-nodes-imobzi-latest v2.8.0
  * Configuração dos recursos da API Imobzi
- * Baseado em testes reais da API - 12/12/2025
+ * Baseado em testes reais COMPLETOS da API - 12/12/2025
  *
- * Correções v2.7.0:
- * - Transações: filter_type (NÃO type!) para filtrar receita/despesa
- * - Transações: removido sort_by/order_by (API retorna erro 500)
- * - Transações: dropdown de contas financeiras
- * - Deal Get by ID: aviso de erro 500 (bug da API)
- * - Calendário: search_all=true obrigatório para ver todos
+ * Correções v2.8.0:
+ * - TODOS os filtros testados e validados com URLs reais do app
+ * - Transações: filter_type, order_by, sort_by, account_id, start_at, end_at
+ * - Faturas: status, payment_method, order_by, sort_by, start_at, end_at
+ * - Deals: deal_type, deal_status, pipeline_group_id, user_id
+ * - Calendário: search_all=true, calendar_type, holiday_year, user_id
+ * - Contatos: smart_list, media_source, tags, user_id, contact_type
+ * - Imóveis: smart_list, user_id, finality, status
+ * - Locações: smart_list
  */
 interface ResourceConfig {
 	endpoint: string;
@@ -123,9 +126,9 @@ export class Imobzi implements INodeType {
 		name: 'imobzi',
 		icon: 'file:imobzi.svg',
 		group: ['transform'],
-		version: 10, // v2.7.0
+		version: 11, // v2.8.0
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-		description: 'Integração com a API da Imobzi v2.7.0',
+		description: 'Integração com a API da Imobzi v2.8.0',
 		defaults: {
 			name: 'Imobzi',
 		},
@@ -810,25 +813,25 @@ export class Imobzi implements INodeType {
 				},
 				options: [
 					{
-						displayName: 'Data Fim (Personalizado)',
+						displayName: 'Data Fim',
 						name: 'end_at',
 						type: 'dateTime',
 						default: '',
-						description: 'Data final (apenas se período = Personalizado)',
+						description: 'Data final do período (formato: YYYY-MM-DD)',
 					},
 					{
-						displayName: 'Data Início (Personalizado)',
+						displayName: 'Data Início',
 						name: 'start_at',
 						type: 'dateTime',
-								default: '',
-						description: 'Data inicial (apenas se período = Personalizado)',
-							},
-							{
+						default: '',
+						description: 'Data inicial do período (formato: YYYY-MM-DD)',
+					},
+					{
 						displayName: 'Método De Pagamento',
 						name: 'payment_method',
-								type: 'options',
+						type: 'options',
 						default: '',
-								options: [
+						options: [
 							{ name: 'Boleto', value: 'bank_slip' },
 							{ name: 'Cartão De Crédito', value: 'credit_card' },
 							{ name: 'PIX', value: 'pix' },
@@ -837,19 +840,25 @@ export class Imobzi implements INodeType {
 						description: 'Filtrar por método de pagamento',
 					},
 					{
-						displayName: 'Período',
-						name: 'periodo',
+						displayName: 'Ordem',
+						name: 'sort_by',
 						type: 'options',
-								default: '',
+						default: 'desc',
 						options: [
-							{ name: '15 Dias Atrás', value: '15' },
-							{ name: '30 Dias Atrás', value: '30' },
-							{ name: '60 Dias Atrás', value: '60' },
-							{ name: '90 Dias Atrás', value: '90' },
-							{ name: 'Personalizado', value: 'custom' },
-							{ name: 'Todos', value: '' },
+							{ name: 'Crescente', value: 'asc' },
+							{ name: 'Decrescente', value: 'desc' },
 						],
-						description: 'Período para buscar faturas',
+						description: 'Ordem de classificação',
+					},
+					{
+						displayName: 'Ordenar Por',
+						name: 'order_by',
+						type: 'options',
+						default: 'date',
+						options: [
+							{ name: 'Data', value: 'date' },
+						],
+						description: 'Campo para ordenação',
 					},
 					{
 						displayName: 'Status',
@@ -1133,6 +1142,27 @@ export class Imobzi implements INodeType {
 						type: 'dateTime',
 						default: '',
 						description: 'Data inicial do período (formato: YYYY-MM-DD)',
+					},
+					{
+						displayName: 'Ordem',
+						name: 'sort_by',
+						type: 'options',
+						default: 'desc',
+						options: [
+							{ name: 'Crescente', value: 'asc' },
+							{ name: 'Decrescente', value: 'desc' },
+						],
+						description: 'Ordem de classificação',
+					},
+					{
+						displayName: 'Ordenar Por',
+						name: 'order_by',
+						type: 'options',
+						default: 'due_date',
+						options: [
+							{ name: 'Data De Vencimento', value: 'due_date' },
+						],
+						description: 'Campo para ordenação',
 					},
 					{
 						displayName: 'Status',
