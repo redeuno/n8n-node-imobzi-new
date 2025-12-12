@@ -44,4 +44,4 @@ export class ImobziApi implements ICredentialType {
 			method: 'GET',
 		},
 	};
-}
+} 

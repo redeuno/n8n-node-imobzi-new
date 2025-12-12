@@ -9,15 +9,16 @@ import type {
 import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
 
 /**
- * n8n-nodes-imobzi-latest v2.6.0
+ * n8n-nodes-imobzi-latest v2.7.0
  * Configuração dos recursos da API Imobzi
- * Baseado em mapeamento completo da API - 12/12/2025
+ * Baseado em testes reais da API - 12/12/2025
  *
- * Correções v2.6.0:
- * - Filtros corrigidos para todos os recursos
- * - Transações Financeiras: filtros completos
- * - CRUD: Create, Update, Delete para Contact, Property, Deal
- * - Todos os dropdowns com valores corretos
+ * Correções v2.7.0:
+ * - Transações: filter_type (NÃO type!) para filtrar receita/despesa
+ * - Transações: removido sort_by/order_by (API retorna erro 500)
+ * - Transações: dropdown de contas financeiras
+ * - Deal Get by ID: aviso de erro 500 (bug da API)
+ * - Calendário: search_all=true obrigatório para ver todos
  */
 interface ResourceConfig {
 	endpoint: string;
@@ -109,6 +110,11 @@ const resourceConfig: { [resource: string]: ResourceConfig } = {
 		endpoint: '/v1/banks',
 		paginationType: 'none',
 	},
+	financialAccount: {
+		endpoint: '/v1/financial/accounts',
+		dataKey: 'accounts',
+		paginationType: 'none',
+	},
 };
 
 export class Imobzi implements INodeType {
@@ -117,9 +123,9 @@ export class Imobzi implements INodeType {
 		name: 'imobzi',
 		icon: 'file:imobzi.svg',
 		group: ['transform'],
-		version: 9, // v2.6.0
+		version: 10, // v2.7.0
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-		description: 'Integração com a API da Imobzi v2.6.0',
+		description: 'Integração com a API da Imobzi v2.7.0',
 		defaults: {
 			name: 'Imobzi',
 		},
@@ -141,6 +147,7 @@ export class Imobzi implements INodeType {
 				options: [
 					{ name: 'Banco', value: 'bank' },
 					{ name: 'Calendário', value: 'calendar' },
+					{ name: 'Conta Financeira', value: 'financialAccount' },
 					{ name: 'Contato', value: 'contact' },
 					{ name: 'Documento', value: 'document' },
 					{ name: 'Estágio (Pipeline)', value: 'pipeline' },
@@ -258,7 +265,7 @@ export class Imobzi implements INodeType {
 					{ name: 'Atualizar', value: 'update', action: 'Atualizar deal' },
 					{ name: 'Criar', value: 'create', action: 'Criar deal' },
 					{ name: 'Get Many', value: 'getAll', action: 'Buscar deals lista plana' },
-					{ name: 'Obter Por ID', value: 'get', action: 'Obter deal por ID' },
+					{ name: '⚠️ Obter Por ID (Bug API)', value: 'get', action: 'Obter deal por ID bug na api' },
 				],
 				default: 'getAll',
 			},
@@ -271,7 +278,7 @@ export class Imobzi implements INodeType {
 				noDataExpression: true,
 				displayOptions: {
 					show: {
-						resource: ['transaction', 'calendar', 'document', 'user', 'pipeline', 'pipelineGroup', 'propertyType', 'mediaSource', 'contactTag', 'lostReason', 'bank', 'dealByStage'],
+						resource: ['transaction', 'calendar', 'document', 'user', 'pipeline', 'pipelineGroup', 'propertyType', 'mediaSource', 'contactTag', 'lostReason', 'bank', 'dealByStage', 'financialAccount'],
 					},
 				},
 				options: [
@@ -294,8 +301,8 @@ export class Imobzi implements INodeType {
 					},
 					hide: {
 						resource: ['contact'],
-					},
 				},
+			},
 			},
 
 			// ==================== CONTACT - TYPE FOR OPERATIONS ====================
@@ -484,15 +491,15 @@ export class Imobzi implements INodeType {
 						displayName: 'Busca',
 						name: 'search_text',
 						type: 'string',
-						default: '',
+								default: '',
 						description: 'Buscar por nome, email ou telefone',
-					},
-					{
+							},
+							{
 						displayName: 'Origem',
 						name: 'media_source',
-						type: 'options',
+								type: 'options',
 								default: '',
-						options: [
+								options: [
 							{ name: 'Ação Externa', value: 'Ação Externa ' },
 							{ name: 'Amigos E Parentes', value: 'Amigos e Parentes' },
 							{ name: 'Avaliador', value: 'Avaliador' },
@@ -557,7 +564,7 @@ export class Imobzi implements INodeType {
 						displayName: 'Tags',
 						name: 'tags',
 								type: 'options',
-						default: '',
+								default: '',
 								options: [
 							{ name: '- 100K', value: '- 100K' },
 							{ name: '+ 5 Milhões', value: '+ 5 Milhões' },
@@ -623,10 +630,10 @@ export class Imobzi implements INodeType {
 					{
 						displayName: 'Tipo De Contato',
 						name: 'contact_type',
-						type: 'options',
+								type: 'options',
 						default: '',
 						description: '⚠️ Este filtro pode não funcionar corretamente na API',
-						options: [
+								options: [
 							{ name: 'Lead', value: 'lead' },
 							{ name: 'Organização', value: 'organization' },
 							{ name: 'Pessoa', value: 'person' },
@@ -637,7 +644,7 @@ export class Imobzi implements INodeType {
 						displayName: 'Usuário Responsável',
 						name: 'user_id',
 						type: 'options',
-						default: '',
+								default: '',
 						options: [
 							{ name: 'Antonio Carlos', value: 'P1ibK4GFPqZYKIx9e55RpQobt7J2' },
 							{ name: 'Bruno Mantovani', value: 'SYkMqS5aInfpP1p9m9MV0AufW0p1' },
@@ -692,9 +699,9 @@ export class Imobzi implements INodeType {
 					{
 						displayName: 'Corretor',
 						name: 'user_id',
-						type: 'options',
+								type: 'options',
 								default: '',
-						options: [
+								options: [
 							{ name: 'Antonio Carlos', value: 'P1ibK4GFPqZYKIx9e55RpQobt7J2' },
 							{ name: 'Bruno Mantovani', value: 'SYkMqS5aInfpP1p9m9MV0AufW0p1' },
 							{ name: 'Campo Grande MS', value: 'qLIwracS5yUk1UIvNmMCjtYgAf62' },
@@ -978,9 +985,9 @@ export class Imobzi implements INodeType {
 					{
 						displayName: 'Corretor',
 						name: 'user_id',
-						type: 'options',
-						default: '',
-						options: [
+								type: 'options',
+								default: '',
+								options: [
 							{ name: 'Antonio Carlos', value: 'P1ibK4GFPqZYKIx9e55RpQobt7J2' },
 							{ name: 'Bruno Mantovani', value: 'SYkMqS5aInfpP1p9m9MV0AufW0p1' },
 							{ name: 'Campo Grande MS', value: 'qLIwracS5yUk1UIvNmMCjtYgAf62' },
@@ -1005,7 +1012,7 @@ export class Imobzi implements INodeType {
 						displayName: 'Grupo De Funil',
 						name: 'pipeline_group_id',
 						type: 'options',
-						default: '',
+								default: '',
 						options: [
 							{ name: 'Captação De Imóveis', value: '5370013421666304' },
 							{ name: 'Comissões', value: '6405034089644032' },
@@ -1099,46 +1106,33 @@ export class Imobzi implements INodeType {
 				},
 				options: [
 					{
-						displayName: 'Conta Bancária',
+						displayName: 'Conta Financeira',
 						name: 'account_id',
-						type: 'string',
+						type: 'options',
 						default: '',
-						description: 'ID da conta bancária. Use "Banco > Get Many" para listar.',
+						description: 'Filtrar por conta financeira',
+						options: [
+							{ name: 'Caixa Economica', value: '6467636073332736' },
+							{ name: 'Dinheiro', value: '6317241432276992' },
+							{ name: 'Mercado Pago', value: '6487354834419712' },
+							{ name: 'PJBank', value: '5374237794631680' },
+							{ name: 'PJBank - Cartão De Crédito', value: '5713727725764608' },
+							{ name: 'Todas As Contas', value: '' },
+						],
 					},
 					{
 						displayName: 'Data Fim',
 						name: 'end_at',
 						type: 'dateTime',
 						default: '',
-						description: 'Data final do período',
+						description: 'Data final do período (formato: YYYY-MM-DD)',
 					},
 					{
 						displayName: 'Data Início',
 						name: 'start_at',
 						type: 'dateTime',
 						default: '',
-						description: 'Data inicial do período',
-					},
-					{
-						displayName: 'Ordem',
-						name: 'sort_by',
-						type: 'options',
-						default: 'desc',
-						options: [
-							{ name: 'Crescente', value: 'asc' },
-							{ name: 'Decrescente', value: 'desc' },
-						],
-					},
-					{
-						displayName: 'Ordenar Por',
-						name: 'order_by',
-						type: 'options',
-						default: 'due_date',
-						options: [
-							{ name: 'Data De Pagamento', value: 'paid_at' },
-							{ name: 'Data De Vencimento', value: 'due_date' },
-							{ name: 'Valor', value: 'amount' },
-						],
+						description: 'Data inicial do período (formato: YYYY-MM-DD)',
 					},
 					{
 						displayName: 'Status',
@@ -1153,13 +1147,15 @@ export class Imobzi implements INodeType {
 					},
 					{
 						displayName: 'Tipo',
-						name: 'type',
+						name: 'filter_type',
 						type: 'options',
 						default: '',
+						description: 'Filtrar por tipo de transação',
 						options: [
 							{ name: 'Despesa', value: 'expense' },
 							{ name: 'Receita', value: 'income' },
 							{ name: 'Todos', value: '' },
+							{ name: 'Transferência', value: 'transference' },
 						],
 					},
 				],

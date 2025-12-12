@@ -278,20 +278,20 @@ npm update -g n8n-nodes-imobzi-latest
 
 ### Reinstalar
 
-```bash
+   ```bash
 npm uninstall -g n8n-nodes-imobzi-latest
 npm install -g n8n-nodes-imobzi-latest
-```
+   ```
 
 ### Verificar logs
 
-```bash
+   ```bash
 # PM2
-pm2 logs n8n
-
+   pm2 logs n8n
+   
 # systemd
-sudo journalctl -u n8n -f
-```
+   sudo journalctl -u n8n -f
+   ```
 
 ## 🔗 Links Úteis
 
