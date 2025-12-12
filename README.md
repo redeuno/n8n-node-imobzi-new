@@ -11,14 +11,14 @@ Node customizado para integração com a **API da Imobzi** no n8n.
 
 | Recurso | Operações |
 |---------|-----------|
-| **Contato** | Listar, Buscar por ID, Buscar por Código, Verificar Existência |
-| **Imóvel** | Listar, Buscar por ID, Buscar por Código, Estatísticas |
+| **Contato** | Listar, Buscar por ID, Buscar por Código, Verificar Existência, **Criar** |
+| **Imóvel** | Listar, Buscar por ID, Buscar por Código, Estatísticas, **Criar** |
 | **Locação** | Listar, Buscar por ID |
 | **Fatura** | Listar, Buscar por ID |
-| **Funil (Deal)** | Listar (busca plana) |
+| **Funil (Deal)** | Listar (busca plana), **Criar** |
 | **Funil Por Estágio** | Listar (visão Kanban) |
 | **Transação Financeira** | Listar |
-| **Calendário** | Listar (requer ano/mês) |
+| **Calendário** | Listar (com filtros avançados) |
 | **Documento** | Listar |
 | **Usuário** | Listar |
 
@@ -80,26 +80,24 @@ Recurso: Contato
 Operação: Get Many
 Filtros:
   - Tipo de Contato: Pessoa/Organização/Lead
-  - Origem: OLX, Site, etc
+  - Origem: Dropdown com 38 opções
+  - Tags: Dropdown com 57 opções
   - Smart List: Meus Contatos, Novos Leads, etc
+  - Usuário Responsável: Dropdown com usuários
 ```
 
-### Buscar Imóvel por Código
+### Criar Contato
 
 ```
-Recurso: Imóvel
-Operação: Buscar Por Código
-Código: 326
-```
-
-### Listar Faturas
-
-```
-Recurso: Fatura
-Operação: Get Many
-Filtros:
-  - Status: Pago/Pendente/Atrasado/Cancelado
-  - Método de Pagamento: Boleto/PIX/Cartão de Crédito
+Recurso: Contato
+Operação: Criar
+Tipo de Contato: Pessoa/Lead/Organização
+Dados (JSON):
+{
+  "name": "Nome do Contato",
+  "email": "email@exemplo.com",
+  "phones": [{"number": "67999999999"}]
+}
 ```
 
 ### Listar Calendário
@@ -110,7 +108,20 @@ Operação: Get Many
 Ano: 2025
 Mês: Dezembro
 Filtros:
+  - Usuário: Dropdown (todos ou específico)
   - Tipo de Item: Visita/Tarefa/WhatsApp/Chamada
+  - Exibir Feriados: Sim/Não
+```
+
+### Listar Faturas
+
+```
+Recurso: Fatura
+Operação: Get Many
+Filtros:
+  - Período: 15/30/60/90 dias ou Personalizado
+  - Status: Pago/Pendente/Atrasado/Cancelado
+  - Método de Pagamento: Boleto/PIX/Cartão de Crédito
 ```
 
 ## 🔧 Auto-Paginação
@@ -123,40 +134,45 @@ O node suporta auto-paginação automática. Selecione a quantidade de registros
 - 500 registros
 - Todos (máx 5000)
 
-## 📊 Filtros Disponíveis
+## 📊 Filtros Disponíveis (v2.5.0)
 
 ### Contato
-- Tipo de Contato (person, organization, lead) ⚠️
-- Origem (media_source)
-- Tags
-- Smart List
-- ID do Usuário/Gestor
-- Busca (search_text)
+- **Usuário Responsável**: Dropdown com 16 usuários
+- **Origem**: Dropdown com 38 origens
+- **Tags**: Dropdown com 57 tags (sistema + personalizadas)
+- **Smart List**: 12 opções (all, my_contacts, new_leads, etc.)
+- **Tipo de Contato**: person, organization, lead
+- **Busca**: Por nome, email ou telefone
 
 ### Imóvel
-- Smart List (available, rent, sale, etc)
-- Finalidade (residential, commercial, rural) ⚠️
-- Status (available, reserved, unavailable)
-- ID do Corretor
+- **Corretor**: Dropdown com 16 usuários
+- **Smart List**: 16 opções (available, rent, sale, without_photos, etc.)
+- **Status**: available, reserved, unavailable
+- **Finalidade**: residential, commercial, rural
 
 ### Locação
-- Smart List (active, inactive)
+- **Smart List**: 9 opções (active, inactive, expiring, finished, etc.)
 
 ### Fatura
-- Status (pending, paid, overdue, canceled, partially_paid, expired, deleted, all)
-- Método de Pagamento (bank_slip, pix, credit_card)
+- **Período**: 15, 30, 60, 90 dias, Personalizado ou Todos
+- **Status**: pending, paid, overdue, canceled, partially_paid, expired, deleted, all
+- **Método de Pagamento**: bank_slip, pix, credit_card
 
 ### Deal
-- Status (in progress, win, lost, stagnant, out_of_date, property_radar, all)
-- ID do Usuário
-- ID do Estágio
-- Mostrar Atividades
+- **Corretor**: Dropdown com 16 usuários
+- **Estágio**: Dropdown com 7 estágios
+- **Status**: open, in_progress, win, lost, stagnant, out_of_date, property_radar
+- **Tipo**: rent, sale, both, all
+- **Mostrar Atividades**: Sim/Não
+
+### Deal Por Estágio
+- **Corretor**: Dropdown com 16 usuários
+- **Grupo de Funil**: Dropdown com 5 grupos
 
 ### Calendário
-- Tipo de Item (task, visit, whatsapp, call)
-- ID do Usuário
-
-> ⚠️ Alguns filtros podem não funcionar corretamente devido a limitações da API Imobzi
+- **Usuário**: Dropdown (Todos ou específico)
+- **Tipo de Item**: task, visit, whatsapp, call
+- **Exibir Feriados**: Sim/Não
 
 ## 🔗 Webhook
 
@@ -188,20 +204,23 @@ Eventos suportados:
 - Locações/Pipelines: NUMBER
 - Faturas: STRING UUID
 
-### Novidades v2.4.0
-- ✅ **Período pré-definido em faturas**: 15, 30, 60, 90 dias + personalizado
-- ✅ **Dropdown de Origem** em contatos (OLX, Site, Facebook, etc.)
-- ✅ **Dropdown de Tags** em contatos
-- ✅ Cálculo automático de datas baseado no período selecionado
+## 🆕 Novidades v2.5.0
 
-### Correções anteriores
+- ✅ **Calendar corrigido**: `search_all=true` + `holiday_year` + `calendar_type=normal`
+- ✅ **57 Tags** em dropdown (sistema + personalizadas)
+- ✅ **38 Origens** em dropdown
+- ✅ **16 Usuários** em dropdown com IDs reais
+- ✅ **Smart Lists completas**: Imóveis (16), Contatos (12), Locação (9)
+- ✅ **Deals melhorados**: `deal_type` + `deal_status` corrigidos
+- ✅ **CRUD**: Create para Contact, Property e Deal
+- ✅ **Pipeline Stages**: Dropdown com 7 estágios
+- ✅ **Pipeline Groups**: Dropdown com 5 grupos
+
+### Correções anteriores (v2.4.0)
+- ✅ Período pré-definido em faturas (15, 30, 60, 90 dias)
 - ✅ CPF/CNPJ aceita formatação (com pontos e traços)
 - ✅ Status de fatura corrigido
 - ✅ Método de pagamento em faturas
-- ✅ Descrições explicativas nos campos de ID
-
-### Roadmap
-- **Fase 6 (v3.0.0):** CRUD Completo - Criar, Atualizar e Excluir para todos os recursos
 
 ## 📄 Licença
 
@@ -221,6 +240,6 @@ MIT © Bruno Mantovani
 
 ---
 
-**Versão:** 2.4.0  
+**Versão:** 2.5.0  
 **Última atualização:** Dezembro 2024  
-**Testado com:** API Imobzi (101 endpoints testados)
+**Testado com:** API Imobzi (mapeamento completo)

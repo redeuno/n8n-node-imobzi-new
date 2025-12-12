@@ -2,19 +2,24 @@
 
 Integração completa com a API da Imobzi - Plataforma de Gestão Imobiliária.
 
-## Versão 2.4.0
+## Versão 2.5.0
 
 ### Novidades
-- ✅ **Período pré-definido em faturas**: 15, 30, 60, 90 dias + personalizado
-- ✅ **Dropdown de Origem** em contatos (OLX, Site, Facebook, WhatsApp, etc.)
-- ✅ **Dropdown de Tags** em contatos (Comprador, Inquilino, Proprietário, etc.)
-- ✅ Cálculo automático de datas baseado no período selecionado
+- ✅ **Calendar corrigido**: `search_all=true` + `holiday_year` + `calendar_type=normal`
+- ✅ **57 Tags** em dropdown (sistema + personalizadas)
+- ✅ **38 Origens** em dropdown
+- ✅ **16 Usuários** em dropdown com IDs reais
+- ✅ **Smart Lists completas**: Imóveis (16), Contatos (12), Locação (9)
+- ✅ **Deals melhorados**: `deal_type` + `deal_status` corrigidos
+- ✅ **CRUD**: Create para Contact, Property e Deal
+- ✅ **Pipeline Stages**: Dropdown com 7 estágios
+- ✅ **Pipeline Groups**: Dropdown com 5 grupos
+
+### Correções anteriores (v2.4.0)
+- ✅ Período pré-definido em faturas (15, 30, 60, 90 dias)
 - ✅ CPF/CNPJ aceita formatação (com pontos e traços)
 - ✅ Status de fatura corrigido
 - ✅ Método de pagamento em faturas
-
-### Roadmap
-- **Fase 6 (v3.0.0):** CRUD Completo - Criar, Atualizar e Excluir
 
 ## Funcionalidades
 
@@ -22,14 +27,14 @@ Integração completa com a API da Imobzi - Plataforma de Gestão Imobiliária.
 
 | Recurso | Operações |
 |---------|-----------|
-| **Contato** | Listar, Buscar por ID, Buscar por Código, Verificar Existência, Criar |
-| **Imóvel** | Listar, Buscar por ID, Buscar por Código, Estatísticas |
+| **Contato** | Listar, Buscar por ID, Buscar por Código, Verificar Existência, **Criar** |
+| **Imóvel** | Listar, Buscar por ID, Buscar por Código, Estatísticas, **Criar** |
 | **Locação** | Listar, Buscar por ID |
 | **Fatura** | Listar, Buscar por ID |
-| **Funil (Deal)** | Listar (busca plana) |
+| **Funil (Deal)** | Listar (busca plana), **Criar** |
 | **Funil Por Estágio** | Listar (visão Kanban) |
 | **Transação Financeira** | Listar |
-| **Calendário** | Listar (requer ano/mês) |
+| **Calendário** | Listar (com filtros avançados) |
 | **Documento** | Listar |
 | **Usuário** | Listar |
 | **Estágio (Pipeline)** | Listar |
@@ -58,14 +63,71 @@ Integração completa com a API da Imobzi - Plataforma de Gestão Imobiliária.
 - **Chave de API**: Gerada no painel da Imobzi
 - **Permissões**: Configuradas para os métodos necessários
 
+## Filtros Disponíveis (v2.5.0)
+
+### Contato
+| Filtro | Descrição |
+|--------|-----------|
+| **Usuário Responsável** | Dropdown com 16 usuários |
+| **Origem** | Dropdown com 38 origens |
+| **Tags** | Dropdown com 57 tags (sistema + personalizadas) |
+| **Smart List** | 12 opções (all, my_contacts, new_leads, etc.) |
+| **Tipo de Contato** | person, organization, lead |
+| **Busca** | Por nome, email ou telefone |
+
+### Imóvel
+| Filtro | Descrição |
+|--------|-----------|
+| **Corretor** | Dropdown com 16 usuários |
+| **Smart List** | 16 opções (available, rent, sale, without_photos, etc.) |
+| **Status** | available, reserved, unavailable |
+| **Finalidade** | residential, commercial, rural |
+
+### Locação
+| Filtro | Descrição |
+|--------|-----------|
+| **Smart List** | 9 opções (active, inactive, expiring, finished, etc.) |
+
+### Fatura
+| Filtro | Descrição |
+|--------|-----------|
+| **Período** | 15, 30, 60, 90 dias, Personalizado ou Todos |
+| **Status** | pending, paid, overdue, canceled, partially_paid, expired, deleted, all |
+| **Método de Pagamento** | bank_slip, pix, credit_card |
+
+### Deal
+| Filtro | Descrição |
+|--------|-----------|
+| **Corretor** | Dropdown com 16 usuários |
+| **Estágio** | Dropdown com 7 estágios |
+| **Status** | open, in_progress, win, lost, stagnant, out_of_date, property_radar |
+| **Tipo** | rent, sale, both, all |
+| **Mostrar Atividades** | Sim/Não |
+
+### Deal Por Estágio
+| Filtro | Descrição |
+|--------|-----------|
+| **Corretor** | Dropdown com 16 usuários |
+| **Grupo de Funil** | Dropdown com 5 grupos |
+
+### Calendário
+| Filtro | Descrição |
+|--------|-----------|
+| **Usuário** | Dropdown (Todos ou específico) |
+| **Tipo de Item** | task, visit, whatsapp, call |
+| **Exibir Feriados** | Sim/Não |
+
 ## Endpoints da API
 
 | Endpoint | Recurso |
 |----------|---------|
 | `/v1/contacts` | Contatos |
+| `/v1/persons` | Criar Pessoa |
+| `/v1/leads` | Criar Lead |
+| `/v1/organizations` | Criar Organização |
 | `/v1/person/{id}` | Pessoa por ID |
 | `/v1/person/code/{code}` | Pessoa por Código |
-| `/v1/properties` | Imóveis |
+| `/v1/properties` | Imóveis / Criar Imóvel |
 | `/v1/property/{id}` | Imóvel por ID |
 | `/v1/property/code/{code}` | Imóvel por Código |
 | `/v1/property/{id}/statistics` | Estatísticas do Imóvel |
@@ -74,7 +136,7 @@ Integração completa com a API da Imobzi - Plataforma de Gestão Imobiliária.
 | `/v1/invoices` | Faturas |
 | `/v1/invoice/{id}` | Fatura por ID |
 | `/v1/deals/search` | Deals (busca plana) |
-| `/v1/deals` | Deals (Kanban) |
+| `/v1/deals` | Deals (Kanban) / Criar Deal |
 | `/v1/financial/transactions` | Transações |
 | `/v1/calendar` | Calendário |
 | `/v1/users` | Usuários |
@@ -86,51 +148,6 @@ Integração completa com a API da Imobzi - Plataforma de Gestão Imobiliária.
 | `/v1/deal/lost-reason` | Motivos de Perda |
 | `/v1/banks` | Bancos |
 | `/v1/contact/exists` | Verificar Existência |
-
-## Filtros Disponíveis
-
-### Contato
-| Filtro | Parâmetro | Valores |
-|--------|-----------|---------|
-| Tipo de Contato | `contact_type` | person, organization, lead |
-| Origem | `media_source` | Texto livre (ex: OLX, Site) |
-| Tags | `tags` | Texto livre |
-| Smart List | `smart_list` | with_deals, my_contacts, new_leads, etc |
-| ID do Usuário | `user_id` | String (use Usuário > Get Many) |
-| Busca | `search_text` | Nome, email ou telefone |
-
-### Imóvel
-| Filtro | Parâmetro | Valores |
-|--------|-----------|---------|
-| Smart List | `smart_list` | available, rent, sale, reserved, etc |
-| Finalidade | `finality` | residential, commercial, rural |
-| Status | `status` | available, unavailable, reserved |
-| ID do Corretor | `user_id` | String (use Usuário > Get Many) |
-
-### Locação
-| Filtro | Parâmetro | Valores |
-|--------|-----------|---------|
-| Smart List | `smart_list` | active, inactive |
-
-### Fatura
-| Filtro | Parâmetro | Valores |
-|--------|-----------|---------|
-| Status | `status` | pending, paid, overdue, canceled, partially_paid, expired, deleted, all |
-| Método de Pagamento | `payment_method` | bank_slip, pix, credit_card |
-
-### Deal
-| Filtro | Parâmetro | Valores |
-|--------|-----------|---------|
-| Status | `deal_status` | in progress, win, lost, stagnant, out_of_date, property_radar, all |
-| ID do Usuário | `user_id` | String (use Usuário > Get Many) |
-| ID do Estágio | `pipeline_id` | Number (use Estágio > Get Many) |
-| Mostrar Atividades | `show_activities` | true/false |
-
-### Calendário
-| Filtro | Parâmetro | Valores |
-|--------|-----------|---------|
-| Tipo de Item | `item_type` | task, visit, whatsapp, call |
-| ID do Usuário | `user_id` | String (use Usuário > Get Many) |
 
 ## Paginação
 
@@ -193,5 +210,5 @@ Para suporte técnico:
 ---
 
 **Criado por**: Bruno Mantovani  
-**Versão**: 2.4.0  
+**Versão**: 2.5.0  
 **Última atualização**: Dezembro 2024

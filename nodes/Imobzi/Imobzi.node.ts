@@ -9,15 +9,18 @@ import type {
 import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
 
 /**
- * n8n-nodes-imobzi-latest v2.4.0
+ * n8n-nodes-imobzi-latest v2.5.0
  * Configuração dos recursos da API Imobzi
- * Baseado em 101 testes reais - 11/12/2025
+ * Baseado em mapeamento completo da API - 12/12/2025
  *
- * Correções v2.4.0:
- * - Período pré-definido em faturas (15, 30, 60, 90 dias + personalizado)
- * - Dropdown de Origem (media_source) em contatos
- * - Dropdown de Tags em contatos
- * - Dropdowns ordenados alfabeticamente
+ * Correções v2.5.0:
+ * - Calendar: search_all=true + item_type completo
+ * - Tags: 57 opções (sistema + personalizadas)
+ * - Media Sources: 38 opções
+ * - Usuários: dropdown com IDs reais
+ * - Smart Lists: atualizadas (Imóveis, Contatos, Locação)
+ * - Deals: deal_type + deal_status corrigidos
+ * - CRUD: Create para Contact, Property, Deal
  */
 interface ResourceConfig {
 	endpoint: string;
@@ -117,9 +120,9 @@ export class Imobzi implements INodeType {
 		name: 'imobzi',
 		icon: 'file:imobzi.svg',
 		group: ['transform'],
-		version: 7, // v2.1.0
+		version: 8, // v2.5.0
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-		description: 'Integração com a API da Imobzi v2.1.0',
+		description: 'Integração com a API da Imobzi v2.5.0',
 		defaults: {
 			name: 'Imobzi',
 		},
@@ -194,6 +197,7 @@ export class Imobzi implements INodeType {
 				},
 				options: [
 					{ name: 'Buscar Por Código', value: 'getByCode', action: 'Buscar im vel por c digo' },
+					{ name: 'Criar', value: 'create', action: 'Criar im vel' },
 					{ name: 'Estatísticas', value: 'statistics', action: 'Obter estat sticas do im vel' },
 					{ name: 'Get Many', value: 'getAll', action: 'Listar im veis' },
 					{ name: 'Obter Por ID', value: 'get', action: 'Obter im vel por id' },
@@ -250,6 +254,7 @@ export class Imobzi implements INodeType {
 					},
 				},
 				options: [
+					{ name: 'Criar', value: 'create', action: 'Criar deal' },
 					{ name: 'Get Many', value: 'getAll', action: 'Buscar deals lista plana' },
 				],
 				default: 'getAll',
@@ -286,8 +291,8 @@ export class Imobzi implements INodeType {
 					},
 					hide: {
 						resource: ['contact'],
-					},
 				},
+			},
 			},
 
 			// ==================== CONTACT - TYPE FOR GET ====================
@@ -410,10 +415,10 @@ export class Imobzi implements INodeType {
 			{
 				displayName: 'Mês',
 				name: 'month',
-				type: 'options',
+								type: 'options',
 				required: true,
 				default: 12,
-				options: [
+								options: [
 					{ name: 'Abril', value: 4 },
 					{ name: 'Agosto', value: 8 },
 					{ name: 'Dezembro', value: 12 },
@@ -440,9 +445,9 @@ export class Imobzi implements INodeType {
 			{
 				displayName: 'Quantidade De Registros',
 				name: 'recordLimit',
-				type: 'options',
+								type: 'options',
 				default: 50,
-				options: [
+								options: [
 					{ name: '50 Registros', value: 50 },
 					{ name: '100 Registros', value: 100 },
 					{ name: '200 Registros', value: 200 },
@@ -476,51 +481,86 @@ export class Imobzi implements INodeType {
 						displayName: 'Busca',
 						name: 'search_text',
 						type: 'string',
-						default: '',
+								default: '',
 						description: 'Buscar por nome, email ou telefone',
-					},
-					{
-						displayName: 'ID Do Usuário',
+							},
+							{
+						displayName: 'Usuário Responsável',
 						name: 'user_id',
-						type: 'string',
+								type: 'options',
 						default: '',
-						description: 'ID do usuário responsável. Use "Usuário > Get Many" para listar IDs.',
+								options: [
+							{ name: 'Antonio Carlos', value: 'P1ibK4GFPqZYKIx9e55RpQobt7J2' },
+							{ name: 'Bruno Mantovani', value: 'SYkMqS5aInfpP1p9m9MV0AufW0p1' },
+							{ name: 'Campo Grande MS', value: 'qLIwracS5yUk1UIvNmMCjtYgAf62' },
+							{ name: 'Cleilson Nantes Nogueira', value: 'Vbp4IUWMP9Tz4AjjbTmv5hlP1yD3' },
+							{ name: 'Daiana Ferrarezi', value: 'ofIHYjFl8NeToYGDXMonzIbRRlB2' },
+							{ name: 'Débora Fonseca Mendonça', value: 'LowszB3ZUhQqfG8ZZWTBKJIFojs1' },
+							{ name: 'Euclides Rebouças', value: 'o2dk6UuXiIMKdPsvx1fxADhd8L12' },
+							{ name: 'Fernando Abreu', value: '9luRJzY8rIOvvok5NHXppiOnYC13' },
+							{ name: 'Julia Sardim', value: 'W92lLWUuymdsoN5KZjXHzv32uPs1' },
+							{ name: 'Leandro Velasco', value: 'd5exMkdlYDYBGCnLRV76F0OhOCi2' },
+							{ name: 'Lidiane Rocha', value: 'liGnEe9aOea2t0sc0ZkrSa8iXF62' },
+							{ name: 'Mariana Cabriotti', value: 'QTEm89uOqdavsUDZpALJdNJKgws1' },
+							{ name: 'Mario Otavio', value: 'PBuvhWtM1pZD3ONzKsAiJ14BdHF3' },
+							{ name: 'Nilson Silva', value: 'B97MLMQ5hTPhPCiwu20RZtu8mpI3' },
+							{ name: 'Sthéfano Ferro', value: 'pMhjLYu0zYXV02SLtUqeUMx5pwh2' },
+							{ name: 'Todos Os Usuários', value: '' },
+							{ name: 'Yan Caliel', value: 'inijJ4kWVtfU6R4oN4nP5odF6SE3' },
+						],
+						description: 'Filtrar por usuário responsável',
 					},
 					{
 						displayName: 'Origem',
 						name: 'media_source',
 						type: 'options',
-						default: '',
+								default: '',
 						options: [
+							{ name: 'Ação Externa', value: 'Ação Externa ' },
 							{ name: 'Amigos E Parentes', value: 'Amigos e Parentes' },
 							{ name: 'Avaliador', value: 'Avaliador' },
 							{ name: 'By Brokers', value: 'By Brokers' },
-							{ name: 'ChavesNaMão', value: 'ChavesNaMão' },
-							{ name: 'Facebook', value: 'Facebook' },
+							{ name: 'Campo Grande News', value: 'Campo Grande News' },
+							{ name: 'Casa Mineira - OpenNavent', value: 'Casa Mineira - OpenNavent' },
+							{ name: 'Chatbot', value: 'Chatbot' },
+							{ name: 'Chaves Na Mão', value: 'Chaves na Mão' },
+							{ name: 'Cold Call 20K+', value: 'Cold Call 20K+' },
+							{ name: 'Cold Call By Brokers', value: 'Cold Call By Brokers' },
+							{ name: 'Damha Urbanizadora', value: 'Damha Urbanizadora' },
+							{ name: 'DFimoveis', value: 'DFimoveis' },
+							{ name: 'Folder', value: 'Folder' },
+							{ name: 'Folheto', value: 'Folheto' },
 							{ name: 'Google', value: 'Google' },
-							{ name: 'ImovelWeb', value: 'ImovelWeb' },
+							{ name: 'Imovelweb', value: 'Imovelweb' },
+							{ name: 'Indicação', value: 'Indicação' },
+							{ name: 'Infoimoveis', value: 'Infoimoveis' },
 							{ name: 'Instagram', value: 'Instagram' },
-							{ name: 'Linkedin', value: 'Linkedin' },
-							{ name: 'Nenhum', value: 'Nenhum' },
+							{ name: 'Lista VIP', value: 'Lista VIP' },
+							{ name: 'Live', value: 'Live' },
 							{ name: 'OLX', value: 'OLX' },
-							{ name: 'Outros', value: 'Outros' },
+							{ name: 'Órulo', value: 'Órulo' },
+							{ name: 'Palestras E Eventos', value: 'Palestras e Eventos' },
 							{ name: 'Placa', value: 'Placa' },
-							{ name: 'Portais', value: 'Portais' },
-							{ name: 'Prospecção', value: 'Prospecção' },
+							{ name: 'Portais Imobiliários', value: 'Portais Imobiliários' },
+							{ name: 'Portal De Notícias', value: 'Portal de Notícias' },
+							{ name: 'Realiza Construtora', value: 'Realiza Construtora' },
+							{ name: 'SDR', value: 'SDR' },
 							{ name: 'Site', value: 'Site' },
-							{ name: 'Telefone', value: 'Telefone' },
-							{ name: 'Todos', value: '' },
+							{ name: 'SMS', value: 'SMS' },
+							{ name: 'Todas As Origens', value: '' },
+							{ name: 'Vaga Corretor', value: 'Vaga Corretor' },
 							{ name: 'VivaReal', value: 'VivaReal' },
 							{ name: 'WhatsApp', value: 'WhatsApp' },
-							{ name: 'ZAP Imóveis', value: 'ZAP Imóveis' },
+							{ name: 'WhatsApp MKT', value: 'WhatsApp MKT' },
+							{ name: 'ZAP', value: 'ZAP' },
 						],
-						description: 'Origem do contato',
+						description: 'Origem do contato (38 opções)',
 					},
 					{
 						displayName: 'Smart List',
 						name: 'smart_list',
-						type: 'options',
-						default: '',
+								type: 'options',
+								default: '',
 						options: [
 							{ name: 'Com Negócios', value: 'with_deals' },
 							{ name: 'Compartilhados Com Outros', value: 'shared_with_others' },
@@ -533,42 +573,81 @@ export class Imobzi implements INodeType {
 							{ name: 'Novos Leads', value: 'new_leads' },
 							{ name: 'Pendentes', value: 'pending' },
 							{ name: 'Sem Negócios', value: 'without_deals' },
-							{ name: 'Todos', value: '' },
+							{ name: 'Todos Os Contatos', value: 'all' },
 						],
 					},
 					{
 						displayName: 'Tags',
 						name: 'tags',
-						type: 'options',
+								type: 'options',
 						default: '',
-						options: [
+								options: [
+							{ name: '- 100K', value: '- 100K' },
+							{ name: '+ 5 Milhões', value: '+ 5 Milhões' },
+							{ name: '1 Milhão À 2 Milhões', value: '1 Milhão à 2 Milhões' },
 							{ name: '1 Quarto', value: '1 Quarto' },
+							{ name: '100K À 200K', value: '100K à 200K' },
+							{ name: '2 Milhões À 3 Milhões', value: '2 Milhões à 3 Milhões' },
 							{ name: '2 Quartos', value: '2 Quartos' },
+							{ name: '200K À 300K', value: '200K à 300K' },
+							{ name: '3 Milhões À 4 Milhões', value: '3 Milhões à 4 Milhões' },
 							{ name: '3 Quartos', value: '3 Quartos' },
-							{ name: '4+ Quartos', value: '4+ Quartos' },
+							{ name: '300K À 400K', value: '300K à 400K' },
+							{ name: '4 Milhões À 5 Milhões', value: '4 Milhões à 5 Milhões' },
+							{ name: '4 Quartos +', value: '4 Quartos +' },
+							{ name: '400k À 500k', value: '400k à 500k' },
+							{ name: '600k À 700k', value: '600k à 700k' },
+							{ name: '800k À 900k', value: '800k à 900k' },
 							{ name: 'Apartamento', value: 'Apartamento' },
+							{ name: 'Arbo', value: 'Arbo' },
 							{ name: 'Casa', value: 'Casa' },
-							{ name: 'Comprador', value: 'Comprador' },
-							{ name: 'Contact', value: 'contact' },
-							{ name: 'Fiador', value: 'Fiador' },
-							{ name: 'Inquilino', value: 'Inquilino' },
-							{ name: 'Investidor', value: 'Investidor' },
+							{ name: 'Casa Em Condomínio', value: 'Casa em Condomínio' },
+							{ name: 'Client (Sistema)', value: 'client' },
+							{ name: 'Condo Manager (Sistema)', value: 'condo manager' },
+							{ name: 'Construtor', value: 'Construtor' },
+							{ name: 'Contact (Sistema)', value: 'contact' },
+							{ name: 'Corretor Parceiro', value: 'Corretor Parceiro' },
+							{ name: 'Customer (Sistema)', value: 'customer' },
+							{ name: 'GHC', value: 'GHC' },
+							{ name: 'Guarantor (Sistema)', value: 'guarantor' },
+							{ name: 'HVM', value: 'HVM' },
+							{ name: 'Imóvel Comercial', value: 'Imóvel comercial' },
+							{ name: 'Indicator (Sistema)', value: 'indicator' },
+							{ name: 'Investimento', value: 'Investimento' },
+							{ name: 'Janitor (Sistema)', value: 'janitor' },
+							{ name: 'Jooy', value: 'Jooy' },
+							{ name: 'Lead (Sistema)', value: 'lead' },
+							{ name: 'Listing Broker (Sistema)', value: 'listing broker' },
 							{ name: 'Locação', value: 'Locação' },
-							{ name: 'Locatário', value: 'Locatário' },
-							{ name: 'Owner', value: 'owner' },
-							{ name: 'Proprietário', value: 'Proprietário' },
-							{ name: 'Terreno', value: 'Terreno' },
-							{ name: 'Todos', value: '' },
-							{ name: 'Venda', value: 'Venda' },
-							{ name: 'VIP', value: 'VIP' },
+							{ name: 'Militar', value: 'Militar' },
+							{ name: 'Moradia', value: 'Moradia' },
+							{ name: 'MRV', value: 'MRV' },
+							{ name: 'Photographer (Sistema)', value: 'photographer' },
+							{ name: 'Plaenge', value: 'Plaenge' },
+							{ name: 'Probabilidade De Fechar | Alta', value: 'Probabilidade de Fechar | Alta' },
+							{ name: 'Probabilidade De Fechar | Baixa', value: 'Probabilidade de Fechar | Baixa' },
+							{ name: 'Property Inspector (Sistema)', value: 'property inspector' },
+							{ name: 'Property-Owner (Sistema)', value: 'property-owner' },
+							{ name: 'Provider (Sistema)', value: 'provider' },
+							{ name: 'Realiza', value: 'Realiza' },
+							{ name: 'Realtor (Sistema)', value: 'realtor' },
+							{ name: 'Receita Potencial | Alta', value: 'Receita Potencial | Alta' },
+							{ name: 'Receita Potencial | Baixa', value: 'Receita Potencial | Baixa' },
+							{ name: 'Renter (Sistema)', value: 'renter' },
+							{ name: 'Santa Rita Do Pardo', value: 'Santa Rita do Pardo' },
+							{ name: 'Seller (Sistema)', value: 'seller' },
+							{ name: 'Terreno Em Condomínio', value: 'Terreno em Condomínio' },
+							{ name: 'Todas As Tags', value: '' },
+							{ name: 'Vanguard', value: 'Vanguard' },
+							{ name: 'Viva Haus', value: 'Viva Haus' },
 						],
-						description: 'Tag do contato. Use "Tag de Contato > Get Many" para ver todas as opções.',
+						description: 'Tag do contato (57 opções - sistema e personalizadas).',
 					},
 					{
 						displayName: 'Tipo De Contato',
 						name: 'contact_type',
 						type: 'options',
-						default: '',
+								default: '',
 						description: '⚠️ Este filtro pode não funcionar corretamente na API',
 						options: [
 							{ name: 'Lead', value: 'lead' },
@@ -597,10 +676,10 @@ export class Imobzi implements INodeType {
 					{
 						displayName: 'Finalidade',
 						name: 'finality',
-						type: 'options',
-						default: '',
+								type: 'options',
+								default: '',
 						description: '⚠️ Este filtro pode não funcionar corretamente na API',
-						options: [
+								options: [
 							{ name: 'Comercial', value: 'commercial' },
 							{ name: 'Residencial', value: 'residential' },
 							{ name: 'Rural', value: 'rural' },
@@ -608,29 +687,51 @@ export class Imobzi implements INodeType {
 						],
 					},
 					{
-						displayName: 'ID Do Corretor',
+						displayName: 'Corretor',
 						name: 'user_id',
-						type: 'string',
-						default: '',
-						description: 'ID do corretor. Use "Usuário > Get Many" para listar IDs.',
+						type: 'options',
+								default: '',
+						options: [
+							{ name: 'Antonio Carlos', value: 'P1ibK4GFPqZYKIx9e55RpQobt7J2' },
+							{ name: 'Bruno Mantovani', value: 'SYkMqS5aInfpP1p9m9MV0AufW0p1' },
+							{ name: 'Campo Grande MS', value: 'qLIwracS5yUk1UIvNmMCjtYgAf62' },
+							{ name: 'Cleilson Nantes Nogueira', value: 'Vbp4IUWMP9Tz4AjjbTmv5hlP1yD3' },
+							{ name: 'Daiana Ferrarezi', value: 'ofIHYjFl8NeToYGDXMonzIbRRlB2' },
+							{ name: 'Débora Fonseca Mendonça', value: 'LowszB3ZUhQqfG8ZZWTBKJIFojs1' },
+							{ name: 'Euclides Rebouças', value: 'o2dk6UuXiIMKdPsvx1fxADhd8L12' },
+							{ name: 'Fernando Abreu', value: '9luRJzY8rIOvvok5NHXppiOnYC13' },
+							{ name: 'Julia Sardim', value: 'W92lLWUuymdsoN5KZjXHzv32uPs1' },
+							{ name: 'Leandro Velasco', value: 'd5exMkdlYDYBGCnLRV76F0OhOCi2' },
+							{ name: 'Lidiane Rocha', value: 'liGnEe9aOea2t0sc0ZkrSa8iXF62' },
+							{ name: 'Mariana Cabriotti', value: 'QTEm89uOqdavsUDZpALJdNJKgws1' },
+							{ name: 'Mario Otavio', value: 'PBuvhWtM1pZD3ONzKsAiJ14BdHF3' },
+							{ name: 'Nilson Silva', value: 'B97MLMQ5hTPhPCiwu20RZtu8mpI3' },
+							{ name: 'Sthéfano Ferro', value: 'pMhjLYu0zYXV02SLtUqeUMx5pwh2' },
+							{ name: 'Todos Os Corretores', value: '' },
+							{ name: 'Yan Caliel', value: 'inijJ4kWVtfU6R4oN4nP5odF6SE3' },
+						],
+						description: 'Filtrar por corretor responsável',
 					},
 					{
 						displayName: 'Smart List',
 						name: 'smart_list',
-						type: 'options',
-						default: '',
-						options: [
+								type: 'options',
+								default: '',
+								options: [
 							{ name: 'Atualizados', value: 'updated' },
+							{ name: 'Atualizados Pelo Proprietário', value: 'updated_by_owner' },
 							{ name: 'Compartilhados Com Outros', value: 'shared_with_others' },
 							{ name: 'Compartilhados Comigo', value: 'shared_with_me' },
-							{ name: 'Desatualizados', value: 'outdated' },
+							{ name: 'Desatualizados (60 Dias)', value: 'outdated' },
 							{ name: 'Disponíveis', value: 'available' },
 							{ name: 'Inativos', value: 'inactives' },
 							{ name: 'Locação', value: 'rent' },
 							{ name: 'Meus Imóveis', value: 'my_properties' },
-							{ name: 'Novos', value: 'new_properties' },
-							{ name: 'Publicados', value: 'site_publish' },
+							{ name: 'Novos (7 Dias)', value: 'new_properties' },
+							{ name: 'Publicados No Site', value: 'site_publish' },
 							{ name: 'Reservados', value: 'reserved' },
+							{ name: 'Sem Fotos', value: 'without_photos' },
+							{ name: 'Sem Localização', value: 'without_location' },
 							{ name: 'Todos', value: '' },
 							{ name: 'Venda', value: 'sale' },
 						],
@@ -639,7 +740,7 @@ export class Imobzi implements INodeType {
 						displayName: 'Status',
 						name: 'status',
 						type: 'options',
-						default: '',
+								default: '',
 						options: [
 							{ name: 'Disponível', value: 'available' },
 							{ name: 'Indisponível', value: 'unavailable' },
@@ -667,16 +768,22 @@ export class Imobzi implements INodeType {
 					{
 						displayName: 'Smart List',
 						name: 'smart_list',
-						type: 'options',
-						default: '',
-						options: [
+								type: 'options',
+								default: '',
+								options: [
 							{ name: 'Ativos', value: 'active' },
+							{ name: 'Em Andamento', value: 'in_progress' },
+							{ name: 'Expirados', value: 'expired' },
+							{ name: 'Finalizados', value: 'finished' },
 							{ name: 'Inativos', value: 'inactive' },
-							{ name: 'Todos', value: '' },
+							{ name: 'Pendentes', value: 'pending' },
+							{ name: 'Próximos A Vencer', value: 'expiring' },
+							{ name: 'Renovados', value: 'renewed' },
+							{ name: 'Todas As Locações', value: 'all' },
+						],
+							},
 						],
 					},
-				],
-			},
 
 			// ==================== INVOICE FILTERS ====================
 			{
@@ -703,15 +810,15 @@ export class Imobzi implements INodeType {
 						displayName: 'Data Início (Personalizado)',
 						name: 'start_at',
 						type: 'dateTime',
-						default: '',
+								default: '',
 						description: 'Data inicial (apenas se período = Personalizado)',
-					},
-					{
+							},
+							{
 						displayName: 'Método De Pagamento',
 						name: 'payment_method',
-						type: 'options',
+								type: 'options',
 						default: '',
-						options: [
+								options: [
 							{ name: 'Boleto', value: 'bank_slip' },
 							{ name: 'Cartão De Crédito', value: 'credit_card' },
 							{ name: 'PIX', value: 'pix' },
@@ -723,7 +830,7 @@ export class Imobzi implements INodeType {
 						displayName: 'Período',
 						name: 'periodo',
 						type: 'options',
-						default: '',
+								default: '',
 						options: [
 							{ name: '15 Dias Atrás', value: '15' },
 							{ name: '30 Dias Atrás', value: '30' },
@@ -769,18 +876,47 @@ export class Imobzi implements INodeType {
 				},
 				options: [
 					{
-						displayName: 'ID Do Estágio (Pipeline)',
-						name: 'pipeline_id',
-						type: 'string',
-						default: '',
-						description: 'ID do estágio. Use "Estágio > Get Many" para listar IDs (ex: 4584666827849728).',
+						displayName: 'Corretor',
+						name: 'user_id',
+								type: 'options',
+								default: '',
+								options: [
+							{ name: 'Antonio Carlos', value: 'P1ibK4GFPqZYKIx9e55RpQobt7J2' },
+							{ name: 'Bruno Mantovani', value: 'SYkMqS5aInfpP1p9m9MV0AufW0p1' },
+							{ name: 'Campo Grande MS', value: 'qLIwracS5yUk1UIvNmMCjtYgAf62' },
+							{ name: 'Cleilson Nantes Nogueira', value: 'Vbp4IUWMP9Tz4AjjbTmv5hlP1yD3' },
+							{ name: 'Daiana Ferrarezi', value: 'ofIHYjFl8NeToYGDXMonzIbRRlB2' },
+							{ name: 'Débora Fonseca Mendonça', value: 'LowszB3ZUhQqfG8ZZWTBKJIFojs1' },
+							{ name: 'Euclides Rebouças', value: 'o2dk6UuXiIMKdPsvx1fxADhd8L12' },
+							{ name: 'Fernando Abreu', value: '9luRJzY8rIOvvok5NHXppiOnYC13' },
+							{ name: 'Julia Sardim', value: 'W92lLWUuymdsoN5KZjXHzv32uPs1' },
+							{ name: 'Leandro Velasco', value: 'd5exMkdlYDYBGCnLRV76F0OhOCi2' },
+							{ name: 'Lidiane Rocha', value: 'liGnEe9aOea2t0sc0ZkrSa8iXF62' },
+							{ name: 'Mariana Cabriotti', value: 'QTEm89uOqdavsUDZpALJdNJKgws1' },
+							{ name: 'Mario Otavio', value: 'PBuvhWtM1pZD3ONzKsAiJ14BdHF3' },
+							{ name: 'Nilson Silva', value: 'B97MLMQ5hTPhPCiwu20RZtu8mpI3' },
+							{ name: 'Sthéfano Ferro', value: 'pMhjLYu0zYXV02SLtUqeUMx5pwh2' },
+							{ name: 'Todos Os Corretores', value: '' },
+							{ name: 'Yan Caliel', value: 'inijJ4kWVtfU6R4oN4nP5odF6SE3' },
+						],
+						description: 'Filtrar por corretor responsável',
 					},
 					{
-						displayName: 'ID Do Usuário',
-						name: 'user_id',
-						type: 'string',
-						default: '',
-						description: 'ID do corretor responsável. Use "Usuário > Get Many" para listar IDs.',
+						displayName: 'Estágio (Pipeline)',
+						name: 'pipeline_id',
+						type: 'options',
+								default: '',
+						options: [
+							{ name: 'Em Atendimento', value: '6481696604553216' },
+							{ name: 'Fechamento', value: '4677659379367936' },
+							{ name: 'Follow UP', value: '5944296774565888' },
+							{ name: 'Negociação', value: '6507246727987200' },
+							{ name: 'Oportunidades', value: '4584666827849728' },
+							{ name: 'Qualificação E Interesse', value: '6005926736691200' },
+							{ name: 'Todos Os Estágios', value: '' },
+							{ name: 'Visita / Apresentação', value: '5381346821144576' },
+						],
+						description: 'Filtrar por estágio do funil',
 					},
 					{
 						displayName: 'Mostrar Atividades',
@@ -792,21 +928,35 @@ export class Imobzi implements INodeType {
 					{
 						displayName: 'Status',
 						name: 'deal_status',
-						type: 'options',
+								type: 'options',
 						default: 'all',
 						options: [
+							{ name: 'Aberto', value: 'open' },
 							{ name: 'Desatualizado', value: 'out_of_date' },
-							{ name: 'Em Progresso', value: 'in progress' },
+							{ name: 'Em Progresso', value: 'in_progress' },
 							{ name: 'Estagnado', value: 'stagnant' },
 							{ name: 'Ganho', value: 'win' },
 							{ name: 'Perdido', value: 'lost' },
-							{ name: 'Radar', value: 'property_radar' },
+							{ name: 'Radar De Imóveis', value: 'property_radar' },
 							{ name: 'Todos', value: 'all' },
 						],
 						description: 'Filtrar por status do deal',
 					},
-				],
-			},
+					{
+						displayName: 'Tipo',
+						name: 'deal_type',
+								type: 'options',
+						default: 'all',
+								options: [
+							{ name: 'Locação', value: 'rent' },
+							{ name: 'Todos', value: 'all' },
+							{ name: 'Venda', value: 'sale' },
+							{ name: 'Venda E Locação', value: 'both' },
+						],
+						description: 'Filtrar por tipo de negócio',
+							},
+						],
+					},
 
 			// ==================== DEAL BY STAGE FILTERS ====================
 			{
@@ -823,18 +973,45 @@ export class Imobzi implements INodeType {
 				},
 				options: [
 					{
-						displayName: 'ID Do Grupo De Funil',
-						name: 'pipeline_group_id',
-						type: 'string',
+						displayName: 'Corretor',
+						name: 'user_id',
+						type: 'options',
 						default: '',
-						description: 'ID do grupo de funil. Use "Grupo de Funil > Get Many" para listar IDs (ex: 5675099632959488).',
+						options: [
+							{ name: 'Antonio Carlos', value: 'P1ibK4GFPqZYKIx9e55RpQobt7J2' },
+							{ name: 'Bruno Mantovani', value: 'SYkMqS5aInfpP1p9m9MV0AufW0p1' },
+							{ name: 'Campo Grande MS', value: 'qLIwracS5yUk1UIvNmMCjtYgAf62' },
+							{ name: 'Cleilson Nantes Nogueira', value: 'Vbp4IUWMP9Tz4AjjbTmv5hlP1yD3' },
+							{ name: 'Daiana Ferrarezi', value: 'ofIHYjFl8NeToYGDXMonzIbRRlB2' },
+							{ name: 'Débora Fonseca Mendonça', value: 'LowszB3ZUhQqfG8ZZWTBKJIFojs1' },
+							{ name: 'Euclides Rebouças', value: 'o2dk6UuXiIMKdPsvx1fxADhd8L12' },
+							{ name: 'Fernando Abreu', value: '9luRJzY8rIOvvok5NHXppiOnYC13' },
+							{ name: 'Julia Sardim', value: 'W92lLWUuymdsoN5KZjXHzv32uPs1' },
+							{ name: 'Leandro Velasco', value: 'd5exMkdlYDYBGCnLRV76F0OhOCi2' },
+							{ name: 'Lidiane Rocha', value: 'liGnEe9aOea2t0sc0ZkrSa8iXF62' },
+							{ name: 'Mariana Cabriotti', value: 'QTEm89uOqdavsUDZpALJdNJKgws1' },
+							{ name: 'Mario Otavio', value: 'PBuvhWtM1pZD3ONzKsAiJ14BdHF3' },
+							{ name: 'Nilson Silva', value: 'B97MLMQ5hTPhPCiwu20RZtu8mpI3' },
+							{ name: 'Sthéfano Ferro', value: 'pMhjLYu0zYXV02SLtUqeUMx5pwh2' },
+							{ name: 'Todos Os Corretores', value: '' },
+							{ name: 'Yan Caliel', value: 'inijJ4kWVtfU6R4oN4nP5odF6SE3' },
+						],
+						description: 'Filtrar por corretor responsável',
 					},
 					{
-						displayName: 'ID Do Usuário',
-						name: 'user_id',
-						type: 'string',
+						displayName: 'Grupo De Funil',
+						name: 'pipeline_group_id',
+						type: 'options',
 						default: '',
-						description: 'ID do corretor. Use "Usuário > Get Many" para listar IDs.',
+						options: [
+							{ name: 'Captação De Imóveis', value: '5370013421666304' },
+							{ name: 'Comissões', value: '6405034089644032' },
+							{ name: 'Geral De Negócios', value: '5675099632959488' },
+							{ name: 'Gestão De Solicitações', value: '6419593693233152' },
+							{ name: 'Gestão De Tarefas', value: '6594235603091456' },
+							{ name: 'Todos Os Grupos', value: '' },
+						],
+						description: 'Filtrar por grupo de funil',
 					},
 				],
 			},
@@ -854,28 +1031,54 @@ export class Imobzi implements INodeType {
 				},
 				options: [
 					{
-						displayName: 'ID Do Usuário',
-						name: 'user_id',
-						type: 'string',
-						default: '',
-						description: 'Filtrar por usuário. Use "Usuário > Get Many" para listar IDs.',
+						displayName: 'Exibir Feriados',
+						name: 'show_holidays',
+						type: 'boolean',
+						default: true,
+						description: 'Whether to include holidays in the response',
 					},
 					{
 						displayName: 'Tipo De Item',
 						name: 'item_type',
-						type: 'options',
-						default: '',
-						description: 'Tipo de item do calendário',
+								type: 'options',
+								default: '',
+						description: 'Tipo de atividade do calendário',
 						options: [
 							{ name: 'Chamada', value: 'call' },
 							{ name: 'Tarefa', value: 'task' },
-							{ name: 'Todos', value: '' },
+							{ name: 'Todas Atividades', value: '' },
 							{ name: 'Visita', value: 'visit' },
 							{ name: 'WhatsApp', value: 'whatsapp' },
 						],
 					},
+					{
+						displayName: 'Usuário',
+						name: 'user_filter',
+								type: 'options',
+						default: 'all',
+						description: 'Filtrar por usuário',
+								options: [
+							{ name: 'Antonio Carlos', value: 'P1ibK4GFPqZYKIx9e55RpQobt7J2' },
+							{ name: 'Bruno Mantovani', value: 'SYkMqS5aInfpP1p9m9MV0AufW0p1' },
+							{ name: 'Campo Grande MS', value: 'qLIwracS5yUk1UIvNmMCjtYgAf62' },
+							{ name: 'Cleilson Nantes Nogueira', value: 'Vbp4IUWMP9Tz4AjjbTmv5hlP1yD3' },
+							{ name: 'Daiana Ferrarezi', value: 'ofIHYjFl8NeToYGDXMonzIbRRlB2' },
+							{ name: 'Débora Fonseca Mendonça', value: 'LowszB3ZUhQqfG8ZZWTBKJIFojs1' },
+							{ name: 'Euclides Rebouças', value: 'o2dk6UuXiIMKdPsvx1fxADhd8L12' },
+							{ name: 'Fernando Abreu', value: '9luRJzY8rIOvvok5NHXppiOnYC13' },
+							{ name: 'Julia Sardim', value: 'W92lLWUuymdsoN5KZjXHzv32uPs1' },
+							{ name: 'Leandro Velasco', value: 'd5exMkdlYDYBGCnLRV76F0OhOCi2' },
+							{ name: 'Lidiane Rocha', value: 'liGnEe9aOea2t0sc0ZkrSa8iXF62' },
+							{ name: 'Mariana Cabriotti', value: 'QTEm89uOqdavsUDZpALJdNJKgws1' },
+							{ name: 'Mario Otavio', value: 'PBuvhWtM1pZD3ONzKsAiJ14BdHF3' },
+							{ name: 'Nilson Silva', value: 'B97MLMQ5hTPhPCiwu20RZtu8mpI3' },
+							{ name: 'Sthéfano Ferro', value: 'pMhjLYu0zYXV02SLtUqeUMx5pwh2' },
+							{ name: 'Todos Os Usuários', value: 'all' },
+							{ name: 'Yan Caliel', value: 'inijJ4kWVtfU6R4oN4nP5odF6SE3' },
+						],
+					},
 				],
-				description: 'Se não houver itens, o calendário estará vazio para o período selecionado',
+				description: 'Filtros do calendário. Por padrão busca todos os usuários.',
 			},
 
 			// ==================== CREATE BODY ====================
@@ -902,7 +1105,7 @@ export class Imobzi implements INodeType {
 			try {
 				const resource = this.getNodeParameter('resource', itemIndex) as string;
 				const operation = this.getNodeParameter('operation', itemIndex) as string;
-
+				
 				const config = resourceConfig[resource];
 				if (!config) {
 					throw new NodeOperationError(this.getNode(), `Recurso "${resource}" não suportado!`, { itemIndex });
@@ -948,7 +1151,7 @@ export class Imobzi implements INodeType {
 							const contactId = this.getNodeParameter('contactId', itemIndex) as string;
 							endpoint = `/v1/${contactType}/${contactId}`;
 						} else {
-							const id = this.getNodeParameter('id', itemIndex) as string;
+						const id = this.getNodeParameter('id', itemIndex) as string;
 							endpoint = `${config.singularEndpoint || config.endpoint}/${id}`;
 						}
 						break;
@@ -970,6 +1173,10 @@ export class Imobzi implements INodeType {
 								organization: '/v1/organizations',
 							};
 							endpoint = typeMap[contactType] || '/v1/persons';
+						} else if (resource === 'property') {
+							endpoint = '/v1/properties';
+						} else if (resource === 'deal') {
+							endpoint = '/v1/deals';
 						}
 						const bodyJson = this.getNodeParameter('body', itemIndex) as string;
 						body = JSON.parse(bodyJson);
@@ -977,10 +1184,33 @@ export class Imobzi implements INodeType {
 					}
 
 					case 'getAll': {
-						// Calendário: campos obrigatórios
+						// Calendário: campos obrigatórios + novos parâmetros
 						if (resource === 'calendar') {
-							qs.year = this.getNodeParameter('year', itemIndex) as number;
-							qs.month = this.getNodeParameter('month', itemIndex) as number;
+							const year = this.getNodeParameter('year', itemIndex) as number;
+							const month = this.getNodeParameter('month', itemIndex) as number;
+							qs.year = year;
+							qs.month = month;
+							qs.calendar_type = 'normal';
+							
+							// Processar filtros do calendário
+							const calFilters = this.getNodeParameter('calendarFilters', itemIndex, {}) as IDataObject;
+							
+							// Usuário: todos ou específico
+							if (calFilters.user_filter === 'all' || !calFilters.user_filter) {
+								qs.search_all = 'true';
+							} else {
+								qs.user_id = calFilters.user_filter;
+							}
+							
+							// Feriados
+							if (calFilters.show_holidays !== false) {
+								qs.holiday_year = year;
+							}
+							
+							// Tipo de item
+							if (calFilters.item_type && calFilters.item_type !== '') {
+								qs.item_type = calFilters.item_type;
+							}
 						}
 
 						// Aplicar filtros
@@ -1060,9 +1290,9 @@ export class Imobzi implements INodeType {
 				// Operações simples (não getAll)
 				if (operation !== 'getAll') {
 					const response = await this.helpers.requestWithAuthentication.call(
-						this,
-						'imobziApi',
-						{
+							this,
+							'imobziApi',
+							{
 							method,
 							url: endpoint,
 							baseURL: 'https://api.imobzi.app',
@@ -1115,8 +1345,8 @@ export class Imobzi implements INodeType {
 
 						// Parar se não há mais dados
 						if (!cursor || pageData.length === 0 || allResults.length >= recordLimit) {
-							break;
-						}
+						break;
+					}
 					} while (true);
 
 					// Retornar resultados
@@ -1172,9 +1402,9 @@ export class Imobzi implements INodeType {
 				// Recursos sem paginação (user, bank, pipeline, etc)
 				else {
 					const response = await this.helpers.requestWithAuthentication.call(
-						this,
-						'imobziApi',
-						{
+							this,
+							'imobziApi',
+							{
 							method: 'GET',
 							url: endpoint,
 							baseURL: 'https://api.imobzi.app',
@@ -1218,4 +1448,4 @@ export class Imobzi implements INodeType {
 
 		return [returnData];
 	}
-}
+} 
