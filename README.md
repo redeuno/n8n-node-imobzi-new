@@ -11,13 +11,13 @@ Node customizado para integração com a **API da Imobzi** no n8n.
 
 | Recurso | Operações |
 |---------|-----------|
-| **Contato** | Listar, Buscar por ID, Buscar por Código, Verificar Existência, **Criar** |
-| **Imóvel** | Listar, Buscar por ID, Buscar por Código, Estatísticas, **Criar** |
+| **Contato** | Listar, Buscar por ID, Buscar por Código, Verificar Existência, Criar, Atualizar, Deletar |
+| **Imóvel** | Listar, Buscar por ID, Buscar por Código, Estatísticas, Criar, Atualizar, Deletar |
 | **Locação** | Listar, Buscar por ID |
 | **Fatura** | Listar, Buscar por ID |
-| **Funil (Deal)** | Listar (busca plana), **Criar** |
+| **Funil (Deal)** | Listar, Buscar por ID, Criar, Atualizar |
 | **Funil Por Estágio** | Listar (visão Kanban) |
-| **Transação Financeira** | Listar |
+| **Transação Financeira** | Listar (com filtros completos) |
 | **Calendário** | Listar (com filtros avançados) |
 | **Documento** | Listar |
 | **Usuário** | Listar |
@@ -79,18 +79,17 @@ pm2 restart n8n
 Recurso: Contato
 Operação: Get Many
 Filtros:
-  - Tipo de Contato: Pessoa/Organização/Lead
+  - Usuário Responsável: Dropdown com 16 usuários
   - Origem: Dropdown com 38 opções
   - Tags: Dropdown com 57 opções
   - Smart List: Meus Contatos, Novos Leads, etc
-  - Usuário Responsável: Dropdown com usuários
 ```
 
-### Criar Contato
+### Criar/Atualizar Contato
 
 ```
 Recurso: Contato
-Operação: Criar
+Operação: Criar / Atualizar
 Tipo de Contato: Pessoa/Lead/Organização
 Dados (JSON):
 {
@@ -98,6 +97,19 @@ Dados (JSON):
   "email": "email@exemplo.com",
   "phones": [{"number": "67999999999"}]
 }
+```
+
+### Listar Transações Financeiras
+
+```
+Recurso: Transação Financeira
+Operação: Get Many
+Filtros:
+  - Data Início / Data Fim
+  - Status: Pago / Pendente
+  - Tipo: Receita / Despesa
+  - Conta Bancária
+  - Ordenar Por / Ordem
 ```
 
 ### Listar Calendário
@@ -108,20 +120,9 @@ Operação: Get Many
 Ano: 2025
 Mês: Dezembro
 Filtros:
-  - Usuário: Dropdown (todos ou específico)
+  - Usuário: Dropdown (Todos ou específico)
   - Tipo de Item: Visita/Tarefa/WhatsApp/Chamada
   - Exibir Feriados: Sim/Não
-```
-
-### Listar Faturas
-
-```
-Recurso: Fatura
-Operação: Get Many
-Filtros:
-  - Período: 15/30/60/90 dias ou Personalizado
-  - Status: Pago/Pendente/Atrasado/Cancelado
-  - Método de Pagamento: Boleto/PIX/Cartão de Crédito
 ```
 
 ## 🔧 Auto-Paginação
@@ -134,7 +135,7 @@ O node suporta auto-paginação automática. Selecione a quantidade de registros
 - 500 registros
 - Todos (máx 5000)
 
-## 📊 Filtros Disponíveis (v2.5.0)
+## 📊 Filtros Disponíveis (v2.6.0)
 
 ### Contato
 - **Usuário Responsável**: Dropdown com 16 usuários
@@ -169,6 +170,14 @@ O node suporta auto-paginação automática. Selecione a quantidade de registros
 - **Corretor**: Dropdown com 16 usuários
 - **Grupo de Funil**: Dropdown com 5 grupos
 
+### Transação Financeira (NOVO v2.6.0)
+- **Data Início / Data Fim**: Período de busca
+- **Status**: Pago, Pendente, Todos
+- **Tipo**: Receita, Despesa, Todos
+- **Conta Bancária**: ID da conta
+- **Ordenar Por**: Data de Vencimento, Data de Pagamento, Valor
+- **Ordem**: Crescente, Decrescente
+
 ### Calendário
 - **Usuário**: Dropdown (Todos ou específico)
 - **Tipo de Item**: task, visit, whatsapp, call
@@ -189,14 +198,15 @@ Eventos suportados:
 
 ## 📝 Notas Importantes
 
+### CRUD
+- **Create**: POST para criar novos registros
+- **Update**: POST para atualizar (API Imobzi não usa PATCH)
+- **Delete**: DELETE para remover registros
+
 ### Paginação
 - Contacts: A API ignora o limite e sempre retorna 50 por página (auto-paginação via cursor)
 - Invoices e Transactions: Usam `next_page` (número) para paginação
 - Outros: Usam `cursor` para paginação
-
-### Endpoints Corretos
-- Transações: `/v1/financial/transactions`
-- Contato por ID: `/v1/person/{id}` (não existe `/v1/contact/{id}`)
 
 ### IDs
 - Usuários: STRING (ex: "P1ibK4GFPqZYKIx9e55RpQobt7J2")
@@ -204,23 +214,26 @@ Eventos suportados:
 - Locações/Pipelines: NUMBER
 - Faturas: STRING UUID
 
-## 🆕 Novidades v2.5.0
+## 🆕 Novidades v2.6.0
 
-- ✅ **Calendar corrigido**: `search_all=true` + `holiday_year` + `calendar_type=normal`
-- ✅ **57 Tags** em dropdown (sistema + personalizadas)
-- ✅ **38 Origens** em dropdown
-- ✅ **16 Usuários** em dropdown com IDs reais
-- ✅ **Smart Lists completas**: Imóveis (16), Contatos (12), Locação (9)
-- ✅ **Deals melhorados**: `deal_type` + `deal_status` corrigidos
-- ✅ **CRUD**: Create para Contact, Property e Deal
-- ✅ **Pipeline Stages**: Dropdown com 7 estágios
-- ✅ **Pipeline Groups**: Dropdown com 5 grupos
+- ✅ **Transações Financeiras**: 7 filtros completos
+- ✅ **CRUD Contato**: Create, Update, Delete
+- ✅ **CRUD Imóvel**: Create, Update, Delete
+- ✅ **CRUD Deal**: Create, Update, Get by ID
+- ✅ **Filtros testados**: Todos validados na API
 
-### Correções anteriores (v2.4.0)
-- ✅ Período pré-definido em faturas (15, 30, 60, 90 dias)
-- ✅ CPF/CNPJ aceita formatação (com pontos e traços)
-- ✅ Status de fatura corrigido
-- ✅ Método de pagamento em faturas
+### Versões anteriores
+
+**v2.5.0:**
+- Calendar corrigido: search_all=true + holiday_year
+- 57 Tags em dropdown
+- 38 Origens em dropdown
+- 16 Usuários com IDs reais
+- Smart Lists completas
+
+**v2.4.0:**
+- Período pré-definido em faturas
+- CPF/CNPJ aceita formatação
 
 ## 📄 Licença
 
@@ -240,6 +253,6 @@ MIT © Bruno Mantovani
 
 ---
 
-**Versão:** 2.5.0  
+**Versão:** 2.6.0  
 **Última atualização:** Dezembro 2024  
 **Testado com:** API Imobzi (mapeamento completo)
