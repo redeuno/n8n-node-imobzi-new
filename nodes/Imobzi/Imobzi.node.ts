@@ -9,30 +9,28 @@ import type {
 import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
 
 /**
- * n8n-nodes-imobzi-latest v2.10.0
+ * n8n-nodes-imobzi-latest v2.11.0
  * Configuração dos recursos da API Imobzi
  * Baseado em testes reais COMPLETOS da API - 12/12/2025
+ *
+ * Correções v2.11.0:
+ * - DEALS: user_id="all" agora é OBRIGATÓRIO e enviado automaticamente
+ * - DEALS: Corrigido filtro "Todos Os Corretores" que retornava 0 resultados
+ * - DEALS: Removidos status/tipos que causam erro 422 (in_progress, gained, etc)
+ * - CALENDÁRIO: Lógica corrigida para usar search_all=true (não user_id=all)
+ * - CALENDÁRIO: Ano/mês/tipo adicionados automaticamente
+ * - Todos os filtros com "Todos" agora estão no topo das opções
  *
  * Correções v2.10.0:
  * - Deal (Lista): Agora usa /v1/deals e extrai lista plana
  * - Deal (Lista): Filtros completos: grupo, etapa, status, tipo, corretor
  * - Deal Por Estágio: Filtro de Etapa (pipeline_id) adicionado
- * - Todos os filtros têm opção "Todos"
  *
- * Correções v2.9.0:
- * - Deals por Estágio: pipeline_group_id, deal_status, deal_type, user_id
- * - Contatos: Aviso em user_id (não funciona na API)
- * - Imóveis: Avisos em finality e status (não confirmados)
- * - Buscar por Código: Aviso que só funciona para person
- * - Deal Get by ID: Aviso de bug na API (erro 500)
- *
- * Filtros confirmados funcionando:
- * - Contatos: smart_list, media_source, tags
- * - Imóveis: smart_list, user_id
- * - Calendário: search_all, calendar_type, holiday_year, user_id, item_type
- * - Faturas: status, payment_method, periodo, start_at, end_at
- * - Transações: filter_type, status, account_id, start_at, end_at
- * - Deals: pipeline_group_id, pipeline_id, deal_status, deal_type, user_id
+ * Comportamento da API descoberto:
+ * - /v1/deals REQUER user_id (all ou específico) para retornar dados
+ * - /v1/calendar REQUER search_all=true OU user_id específico (não all)
+ * - deal_status: apenas "all" e "lost" funcionam, outros causam 422
+ * - deal_type: apenas "all" funciona, lease/sale causam 422
  */
 interface ResourceConfig {
 	endpoint: string;
@@ -137,9 +135,9 @@ export class Imobzi implements INodeType {
 		name: 'imobzi',
 		icon: 'file:imobzi.svg',
 		group: ['transform'],
-		version: 13, // v2.10.0
+		version: 14, // v2.11.0
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-		description: 'Integração com a API da Imobzi v2.10.0 - Deals com filtros completos',
+		description: 'Integração com a API da Imobzi v2.11.0 - Correção filtros Todos',
 		defaults: {
 			name: 'Imobzi',
 		},
@@ -913,8 +911,8 @@ export class Imobzi implements INodeType {
 						displayName: 'Corretor',
 						name: 'user_id',
 						type: 'options',
-						default: '',
-						description: 'Filtrar por corretor responsável',
+						default: 'all',
+						description: 'Filtrar por corretor responsável. IMPORTANTE: user_id é obrigatório para a API retornar deals.',
 						options: [
 							{ name: 'Antonio Carlos', value: 'P1ibK4GFPqZYKIx9e55RpQobt7J2' },
 							{ name: 'Bruno Mantovani', value: 'SYkMqS5aInfpP1p9m9MV0AufW0p1' },
@@ -931,7 +929,7 @@ export class Imobzi implements INodeType {
 							{ name: 'Mario Otavio', value: 'PBuvhWtM1pZD3ONzKsAiJ14BdHF3' },
 							{ name: 'Nilson Silva', value: 'B97MLMQ5hTPhPCiwu20RZtu8mpI3' },
 							{ name: 'Sthéfano Ferro', value: 'pMhjLYu0zYXV02SLtUqeUMx5pwh2' },
-							{ name: 'Todos Os Corretores', value: '' },
+							{ name: 'Todos Os Corretores', value: 'all' },
 							{ name: 'Yan Caliel', value: 'inijJ4kWVtfU6R4oN4nP5odF6SE3' },
 						],
 					},
@@ -940,7 +938,7 @@ export class Imobzi implements INodeType {
 						name: 'pipeline_id',
 						type: 'options',
 						default: '',
-						description: 'Filtrar por etapa do funil',
+						description: 'Filtrar por etapa do funil. ⚠️ Este filtro pode não funcionar na API.',
 						options: [
 							{ name: 'Em Atendimento', value: '6481696604553216' },
 							{ name: 'Fechamento', value: '4677659379367936' },
@@ -957,7 +955,7 @@ export class Imobzi implements INodeType {
 						name: 'pipeline_group_id',
 						type: 'options',
 						default: '',
-						description: 'Filtrar por grupo de funil',
+						description: 'Filtrar por grupo de funil. ⚠️ Este filtro pode não funcionar na API.',
 						options: [
 							{ name: 'Captação De Imóveis', value: '5370013421666304' },
 							{ name: 'Comissões', value: '6405034089644032' },
@@ -972,14 +970,9 @@ export class Imobzi implements INodeType {
 						name: 'deal_status',
 						type: 'options',
 						default: 'all',
-						description: 'Filtrar por status do deal',
+						description: 'Filtrar por status. ⚠️ Alguns status (in_progress, gained) podem causar erro 422.',
 						options: [
-							{ name: 'Desatualizado', value: 'out_of_date' },
-							{ name: 'Em Progresso', value: 'in_progress' },
-							{ name: 'Estagnado', value: 'stagnant' },
-							{ name: 'Ganho', value: 'win' },
 							{ name: 'Perdido', value: 'lost' },
-							{ name: 'Radar De Imóveis', value: 'property_radar' },
 							{ name: 'Todos', value: 'all' },
 						],
 					},
@@ -988,12 +981,9 @@ export class Imobzi implements INodeType {
 						name: 'deal_type',
 						type: 'options',
 						default: 'all',
-						description: 'Filtrar por tipo de negócio',
+						description: 'Filtrar por tipo. ⚠️ Alguns tipos (lease, sale) podem causar erro 422.',
 						options: [
-							{ name: 'Locação', value: 'rent' },
 							{ name: 'Todos', value: 'all' },
-							{ name: 'Venda', value: 'sale' },
-							{ name: 'Venda E Locação', value: 'both' },
 						],
 					},
 				],
@@ -1019,8 +1009,8 @@ export class Imobzi implements INodeType {
 						displayName: 'Corretor',
 						name: 'user_id',
 						type: 'options',
-						default: '',
-						description: 'Filtrar por corretor responsável',
+						default: 'all',
+						description: 'Filtrar por corretor responsável. IMPORTANTE: user_id é obrigatório para a API retornar deals.',
 						options: [
 							{ name: 'Antonio Carlos', value: 'P1ibK4GFPqZYKIx9e55RpQobt7J2' },
 							{ name: 'Bruno Mantovani', value: 'SYkMqS5aInfpP1p9m9MV0AufW0p1' },
@@ -1037,7 +1027,7 @@ export class Imobzi implements INodeType {
 							{ name: 'Mario Otavio', value: 'PBuvhWtM1pZD3ONzKsAiJ14BdHF3' },
 							{ name: 'Nilson Silva', value: 'B97MLMQ5hTPhPCiwu20RZtu8mpI3' },
 							{ name: 'Sthéfano Ferro', value: 'pMhjLYu0zYXV02SLtUqeUMx5pwh2' },
-							{ name: 'Todos Os Corretores', value: '' },
+							{ name: 'Todos Os Corretores', value: 'all' },
 							{ name: 'Yan Caliel', value: 'inijJ4kWVtfU6R4oN4nP5odF6SE3' },
 						],
 					},
@@ -1046,7 +1036,7 @@ export class Imobzi implements INodeType {
 						name: 'pipeline_id',
 						type: 'options',
 						default: '',
-						description: 'Filtrar por etapa específica do funil',
+						description: 'Filtrar por etapa específica do funil. ⚠️ Este filtro pode não funcionar na API.',
 						options: [
 							{ name: 'Em Atendimento', value: '6481696604553216' },
 							{ name: 'Fechamento', value: '4677659379367936' },
@@ -1063,7 +1053,7 @@ export class Imobzi implements INodeType {
 						name: 'pipeline_group_id',
 						type: 'options',
 						default: '',
-						description: 'Filtrar por grupo de funil',
+						description: 'Filtrar por grupo de funil. ⚠️ Este filtro pode não funcionar na API.',
 						options: [
 							{ name: 'Captação De Imóveis', value: '5370013421666304' },
 							{ name: 'Comissões', value: '6405034089644032' },
@@ -1078,14 +1068,9 @@ export class Imobzi implements INodeType {
 						name: 'deal_status',
 						type: 'options',
 						default: 'all',
-						description: 'Filtrar por status do deal',
+						description: 'Filtrar por status. ⚠️ Alguns status (in_progress, gained) podem causar erro 422.',
 						options: [
-							{ name: 'Desatualizado', value: 'out_of_date' },
-							{ name: 'Em Progresso', value: 'in_progress' },
-							{ name: 'Estagnado', value: 'stagnant' },
-							{ name: 'Ganho', value: 'win' },
 							{ name: 'Perdido', value: 'lost' },
-							{ name: 'Radar De Imóveis', value: 'property_radar' },
 							{ name: 'Todos', value: 'all' },
 						],
 					},
@@ -1094,12 +1079,9 @@ export class Imobzi implements INodeType {
 						name: 'deal_type',
 						type: 'options',
 						default: 'all',
-						description: 'Filtrar por tipo de negócio',
+						description: 'Filtrar por tipo. ⚠️ Alguns tipos (lease, sale) podem causar erro 422.',
 						options: [
-							{ name: 'Locação', value: 'rent' },
 							{ name: 'Todos', value: 'all' },
-							{ name: 'Venda', value: 'sale' },
-							{ name: 'Venda E Locação', value: 'both' },
 						],
 					},
 				],
@@ -1486,6 +1468,32 @@ export class Imobzi implements INodeType {
 										qs[key] = value;
 									}
 								}
+							}
+
+							// ==================== LÓGICA ESPECIAL POR RECURSO ====================
+
+							// DEALS: user_id é OBRIGATÓRIO para retornar dados
+							// Se não foi especificado, usar 'all' como padrão
+							if ((resource === 'deal' || resource === 'dealByStage') && !qs.user_id) {
+								qs.user_id = 'all';
+							}
+
+							// CALENDÁRIO: Para "todos os usuários", usar search_all=true
+							// Não enviar user_id=all (causa erro 500)
+							if (resource === 'calendar') {
+								if (filters.user_filter === 'all' || !filters.user_filter) {
+									qs.search_all = 'true';
+									delete qs.user_filter;
+									delete qs.user_id;
+								} else if (filters.user_filter) {
+									qs.user_id = filters.user_filter;
+									delete qs.user_filter;
+								}
+								// Adicionar ano e mês obrigatórios
+								const now = new Date();
+								if (!qs.year) qs.year = now.getFullYear();
+								if (!qs.month) qs.month = now.getMonth() + 1;
+								if (!qs.calendar_type) qs.calendar_type = 'normal';
 							}
 						}
 
