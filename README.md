@@ -5,12 +5,13 @@ Node customizado para integração com a **API da Imobzi** no n8n.
 [![npm version](https://badge.fury.io/js/n8n-nodes-imobzi-latest.svg)](https://www.npmjs.com/package/n8n-nodes-imobzi-latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## 🆕 Novidades v2.10.0
+## 🆕 Novidades v2.12.0
 
-- ✅ **Deal (Lista)**: Agora usa `/v1/deals` com filtros completos
-- ✅ **Filtros de Deal**: Grupo de Funil, Etapa, Status, Tipo, Corretor
-- ✅ **Todos os filtros têm opção "Todos"**
-- ✅ **Output Lista Plana**: Deals extraídos da estrutura Kanban em lista
+- ✅ **DEALS Status**: Adicionados `win` (19), `stagnant` (229), `property_radar` (100), `out_of_date` (201)
+- ✅ **DEALS Tipo**: Adicionado `rent` (138 deals de locação)
+- ✅ **Calendário item_type**: Filtro por tipo de atividade (`task`, `whatsapp`, `visit`, `call`)
+- ✅ **+250 testes da API**: Todos os filtros foram extensivamente testados
+- ✅ **Descoberta**: Base com 16.064 contatos, 2.434 deals, 57 tags, 38 origens
 
 ## 📋 Recursos Disponíveis
 
@@ -161,27 +162,28 @@ O node suporta auto-paginação automática. Selecione a quantidade de registros
 ### Locação
 - **✅ Smart List**: 9 opções (active, inactive, expiring, finished, etc.)
 
-### Fatura
+### Fatura - v2.12.0 ✅ CONFIRMADO
 - **✅ Período**: 15, 30, 60, 90 dias, Personalizado ou Todos
-- **✅ Status**: pending, paid, overdue, canceled, partially_paid, expired, deleted, all
+- **✅ Status**: pending, paid, overdue, `canceled` (1 L!), partially_paid, expired, deleted, all
 - **✅ Método de Pagamento**: bank_slip, pix, credit_card
 - **✅ Ordenar Por / Ordem**
+- **⚠️ status=cancelled**: Com 2 L's causa erro 422 (usar `canceled`)
 
-### Deal (Lista) - v2.10.0 ✅ ATUALIZADO
-Agora usa `/v1/deals` com todos os filtros funcionando:
+### Deal (Lista) - v2.12.0 ✅ ATUALIZADO
+Agora usa `/v1/deals` com filtros extensivamente testados:
 - **✅ Grupo de Funil**: Todos + 5 grupos
 - **✅ Etapa**: Todas + 7 estágios
-- **✅ Status do Deal**: Todos + 7 status
-- **✅ Tipo de Negócio**: Todos + 4 tipos
+- **✅ Status do Deal**: `all` (233), `win` (19), `lost` (220), `stagnant` (229), `property_radar` (100), `out_of_date` (201)
+- **✅ Tipo de Negócio**: `all` (233), `rent` (138)
 - **✅ Corretor**: Todos + 16 usuários
 - **📤 Output**: Lista plana de deals
 
 ### Deal Por Estágio (Kanban)
 Mesmos filtros do Deal (Lista):
 - **✅ Grupo de Funil**: Todos + 5 grupos
-- **✅ Etapa**: Todas + 7 estágios (novo!)
-- **✅ Status do Deal**: Todos + 7 status
-- **✅ Tipo de Negócio**: Todos + 4 tipos
+- **✅ Etapa**: Todas + 7 estágios
+- **✅ Status do Deal**: 6 opções testadas (win, lost, stagnant, property_radar, out_of_date, all)
+- **✅ Tipo de Negócio**: all, rent
 - **✅ Corretor**: Todos + 16 usuários
 - **📤 Output**: Estrutura Kanban (deals agrupados por estágio)
 
@@ -193,10 +195,11 @@ Mesmos filtros do Deal (Lista):
 - **✅ Ordenar Por**: Data de Vencimento, Data de Pagamento, Valor
 - **✅ Ordem**: Crescente, Decrescente
 
-### Calendário
+### Calendário - v2.12.0 ✅ ATUALIZADO
 - **✅ Usuário**: Dropdown (Todos ou específico)
-- **✅ Tipo de Item**: task, visit, whatsapp, call
+- **✅ Tipo de Item**: `task` (461 itens), `whatsapp` (326), `visit`, `call`
 - **✅ Exibir Feriados**: Sim/Não
+- **⚠️ item_type=all/meeting**: Causam erro 422 (não suportados pela API)
 
 ## 🔗 Webhook
 
@@ -247,7 +250,18 @@ Eventos suportados:
 
 ## 📋 Histórico de Versões
 
-### v2.10.0 (Atual)
+### v2.12.0 (Atual)
+- ✅ **DEALS Status**: Adicionados `win`, `stagnant`, `property_radar`, `out_of_date`
+- ✅ **DEALS Tipo**: Adicionado `rent` (138 deals de locação)
+- ✅ **Calendário item_type**: Filtro atualizado com `task` (461), `whatsapp` (326)
+- ✅ **Faturas**: Confirmado `canceled` (1 L), não `cancelled` (2 L's)
+- ✅ **+250 testes**: Todos os filtros extensivamente testados
+
+### v2.11.0
+- ✅ **DEALS user_id**: Corrigido filtro "Todos Os Corretores"
+- ✅ **CALENDÁRIO**: Lógica corrigida para usar search_all=true
+
+### v2.10.0
 - ✅ **Deal (Lista)**: Agora usa `/v1/deals` com todos os filtros
 - ✅ **Filtro de Etapa**: Adicionado em Deal e Deal Por Estágio
 - ✅ **Output Lista Plana**: Deals extraídos da estrutura Kanban
@@ -288,6 +302,7 @@ MIT © Bruno Mantovani
 
 ---
 
-**Versão:** 2.10.0  
-**Última atualização:** 12 Dezembro 2025  
-**Documentação:** [docs/ESTRUTURA_NODES_IMOBZI.md](docs/ESTRUTURA_NODES_IMOBZI.md)
+**Versão:** 2.12.0  
+**Última atualização:** 14 Dezembro 2025  
+**Documentação:** [docs/ESTRUTURA_NODES_IMOBZI.md](docs/ESTRUTURA_NODES_IMOBZI.md)  
+**Changelog:** [docs/CHANGELOG_v2.12.md](docs/CHANGELOG_v2.12.md)

@@ -436,3 +436,4 @@ Terreno em Condomínio, Vanguard, Viva Haus
 - `user_id` em Deals
 - `pipeline_id` em Deals
 
+

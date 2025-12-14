@@ -9,28 +9,34 @@ import type {
 import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
 
 /**
- * n8n-nodes-imobzi-latest v2.11.0
+ * n8n-nodes-imobzi-latest v2.12.0
  * Configuração dos recursos da API Imobzi
- * Baseado em testes reais COMPLETOS da API - 12/12/2025
+ * Baseado em +250 testes reais da API - 14/12/2025
  *
- * Correções v2.11.0:
- * - DEALS: user_id="all" agora é OBRIGATÓRIO e enviado automaticamente
- * - DEALS: Corrigido filtro "Todos Os Corretores" que retornava 0 resultados
- * - DEALS: Removidos status/tipos que causam erro 422 (in_progress, gained, etc)
- * - CALENDÁRIO: Lógica corrigida para usar search_all=true (não user_id=all)
- * - CALENDÁRIO: Ano/mês/tipo adicionados automaticamente
- * - Todos os filtros com "Todos" agora estão no topo das opções
+ * Correções v2.12.0:
+ * - DEALS: Adicionados status win, stagnant, property_radar, out_of_date
+ * - DEALS: Adicionado deal_type=rent (138 deals de locação)
+ * - CALENDÁRIO: Adicionado filtro item_type (task, whatsapp, visit, call)
+ * - FATURAS: Confirmado status=canceled (não cancelled - 2 L's dá erro)
  *
- * Correções v2.10.0:
- * - Deal (Lista): Agora usa /v1/deals e extrai lista plana
- * - Deal (Lista): Filtros completos: grupo, etapa, status, tipo, corretor
- * - Deal Por Estágio: Filtro de Etapa (pipeline_id) adicionado
+ * Descobertas da API (14/12/2025):
+ * - Contatos total na base: 16.064
+ * - Deals total na base: 2.434
+ * - Tags disponíveis: 57
+ * - Media Sources: 38
+ * - Pipeline Groups: 5
+ * - Pipelines/Etapas: 7
  *
- * Comportamento da API descoberto:
+ * Comportamento da API:
  * - /v1/deals REQUER user_id (all ou específico) para retornar dados
  * - /v1/calendar REQUER search_all=true OU user_id específico (não all)
- * - deal_status: apenas "all" e "lost" funcionam, outros causam 422
- * - deal_type: apenas "all" funciona, lease/sale causam 422
+ * - deal_status que funcionam: all, win, lost, stagnant, property_radar, out_of_date
+ * - deal_status que NÃO funcionam: in_progress, gained (422)
+ * - deal_type que funcionam: all, rent
+ * - deal_type que NÃO funcionam: sale, both, lease (422)
+ * - Faturas: status=canceled (1 L) funciona, cancelled (2 L's) = 422
+ * - Calendário item_type: task (461), whatsapp (326), visit, call funcionam
+ * - Calendário item_type: all, meeting = 422
  */
 interface ResourceConfig {
 	endpoint: string;
@@ -135,9 +141,9 @@ export class Imobzi implements INodeType {
 		name: 'imobzi',
 		icon: 'file:imobzi.svg',
 		group: ['transform'],
-		version: 14, // v2.11.0
+		version: 15, // v2.12.0
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-		description: 'Integração com a API da Imobzi v2.11.0 - Correção filtros Todos',
+		description: 'Integração com a API da Imobzi v2.12.0 - Filtros completos testados',
 		defaults: {
 			name: 'Imobzi',
 		},
@@ -970,9 +976,13 @@ export class Imobzi implements INodeType {
 						name: 'deal_status',
 						type: 'options',
 						default: 'all',
-						description: 'Filtrar por status. ⚠️ Alguns status (in_progress, gained) podem causar erro 422.',
+						description: 'Filtrar por status do deal. Testado: all (233), win (19), lost (220), stagnant (229), property_radar (100), out_of_date (201).',
 						options: [
+							{ name: '+3 Meses (Desatualizado)', value: 'out_of_date' },
+							{ name: 'Estagnado', value: 'stagnant' },
+							{ name: 'Ganho', value: 'win' },
 							{ name: 'Perdido', value: 'lost' },
+							{ name: 'Radar De Imóveis', value: 'property_radar' },
 							{ name: 'Todos', value: 'all' },
 						],
 					},
@@ -981,8 +991,9 @@ export class Imobzi implements INodeType {
 						name: 'deal_type',
 						type: 'options',
 						default: 'all',
-						description: 'Filtrar por tipo. ⚠️ Alguns tipos (lease, sale) podem causar erro 422.',
+						description: 'Filtrar por tipo de negócio. Testado: all (233), rent (138).',
 						options: [
+							{ name: 'Locação', value: 'rent' },
 							{ name: 'Todos', value: 'all' },
 						],
 					},
@@ -1068,9 +1079,13 @@ export class Imobzi implements INodeType {
 						name: 'deal_status',
 						type: 'options',
 						default: 'all',
-						description: 'Filtrar por status. ⚠️ Alguns status (in_progress, gained) podem causar erro 422.',
+						description: 'Filtrar por status do deal. Testado: all (233), win (19), lost (220), stagnant (229), property_radar (100), out_of_date (201).',
 						options: [
+							{ name: '+3 Meses (Desatualizado)', value: 'out_of_date' },
+							{ name: 'Estagnado', value: 'stagnant' },
+							{ name: 'Ganho', value: 'win' },
 							{ name: 'Perdido', value: 'lost' },
+							{ name: 'Radar De Imóveis', value: 'property_radar' },
 							{ name: 'Todos', value: 'all' },
 						],
 					},
@@ -1079,8 +1094,9 @@ export class Imobzi implements INodeType {
 						name: 'deal_type',
 						type: 'options',
 						default: 'all',
-						description: 'Filtrar por tipo. ⚠️ Alguns tipos (lease, sale) podem causar erro 422.',
+						description: 'Filtrar por tipo de negócio. Testado: all (233), rent (138).',
 						options: [
+							{ name: 'Locação', value: 'rent' },
 							{ name: 'Todos', value: 'all' },
 						],
 					},
@@ -1111,9 +1127,9 @@ export class Imobzi implements INodeType {
 					{
 						displayName: 'Tipo De Item',
 						name: 'item_type',
-								type: 'options',
-								default: '',
-						description: 'Tipo de atividade do calendário',
+						type: 'options',
+						default: '',
+						description: 'Tipo de atividade. Testado: task (461 itens), whatsapp (326 itens), visit, call.',
 						options: [
 							{ name: 'Chamada', value: 'call' },
 							{ name: 'Tarefa', value: 'task' },
