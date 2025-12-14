@@ -5,30 +5,47 @@ Node customizado para integração com a **API da Imobzi** no n8n.
 [![npm version](https://badge.fury.io/js/n8n-nodes-imobzi-latest.svg)](https://www.npmjs.com/package/n8n-nodes-imobzi-latest)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## 🆕 Novidades v2.12.0
+## 🆕 Novidades v2.13.0
 
-- ✅ **DEALS Status**: Adicionados `win` (19), `stagnant` (229), `property_radar` (100), `out_of_date` (201)
-- ✅ **DEALS Tipo**: Adicionado `rent` (138 deals de locação)
-- ✅ **Calendário item_type**: Filtro por tipo de atividade (`task`, `whatsapp`, `visit`, `call`)
-- ✅ **+250 testes da API**: Todos os filtros foram extensivamente testados
-- ✅ **Descoberta**: Base com 16.064 contatos, 2.434 deals, 57 tags, 38 origens
+### FASE 1 COMPLETA - CRUD
+
+- ✅ **Transação Financeira**: Get by ID, Create, Update, Delete
+- ✅ **Calendário**: Create, Update, Delete atividades
+- ✅ **Locação**: Create, Update, Delete contratos
+- ✅ **Fatura**: Create, Update faturas
+
+### FASE 2 - NOVOS RECURSOS
+
+- ✅ **Histórico (Timeline)**: Buscar/criar histórico do contato
+- ✅ **Proposta**: Gerenciar propostas de deals
+- ✅ **Reserva de Imóvel**: Criar/cancelar reservas
+- ✅ **Match de Imóveis**: Buscar imóveis compatíveis com cliente
 
 ## 📋 Recursos Disponíveis
 
-### Recursos Principais
+### Recursos Principais (CRUD Completo)
 
 | Recurso | Operações |
 |---------|-----------|
 | **Contato** | Listar, Buscar por ID, Buscar por Código, Verificar Existência, Criar, Atualizar, Deletar |
 | **Imóvel** | Listar, Buscar por ID, Buscar por Código, Estatísticas, Criar, Atualizar, Deletar |
-| **Locação** | Listar, Buscar por ID |
-| **Fatura** | Listar, Buscar por ID |
+| **Locação** | Listar, Buscar por ID, **Criar, Atualizar, Deletar** ✨ |
+| **Fatura** | Listar, Buscar por ID, **Criar, Atualizar** ✨ |
 | **Funil (Deal)** | Listar, Buscar por ID, Criar, Atualizar |
 | **Funil Por Estágio** | Listar (visão Kanban) |
-| **Transação Financeira** | Listar (com filtros completos) |
-| **Calendário** | Listar (com filtros avançados) |
+| **Transação Financeira** | Listar, **Buscar por ID, Criar, Atualizar, Deletar** ✨ |
+| **Calendário** | Listar, **Criar, Atualizar, Deletar** atividades ✨ |
 | **Documento** | Listar |
 | **Usuário** | Listar |
+
+### Novos Recursos (Fase 2) ✨
+
+| Recurso | Operações |
+|---------|-----------|
+| **Histórico (Timeline)** | Listar histórico, Criar nota |
+| **Proposta** | Listar, Criar, Atualizar propostas |
+| **Reserva de Imóvel** | Listar, Criar, Cancelar reservas |
+| **Match de Imóveis** | Listar imóveis compatíveis |
 
 ### Recursos Auxiliares (para dropdowns)
 
@@ -39,6 +56,7 @@ Node customizado para integração com a **API da Imobzi** no n8n.
 - Tag de Contato
 - Motivo de Perda
 - Banco
+- Conta Financeira
 
 ## 🚀 Instalação
 
@@ -250,7 +268,13 @@ Eventos suportados:
 
 ## 📋 Histórico de Versões
 
-### v2.12.0 (Atual)
+### v2.13.0 (Atual) ✨
+- ✅ **FASE 1 COMPLETA**: CRUD para Transação, Calendário, Locação, Fatura
+- ✅ **FASE 2 COMPLETA**: Timeline, Proposta, Reserva, Match de Imóveis
+- ✅ **4 Novos Recursos**: Histórico, Propostas, Reservas, Match
+- ✅ **15 Novas Operações**: Create, Update, Delete para múltiplos recursos
+
+### v2.12.0
 - ✅ **DEALS Status**: Adicionados `win`, `stagnant`, `property_radar`, `out_of_date`
 - ✅ **DEALS Tipo**: Adicionado `rent` (138 deals de locação)
 - ✅ **Calendário item_type**: Filtro atualizado com `task` (461), `whatsapp` (326)
@@ -302,7 +326,8 @@ MIT © Bruno Mantovani
 
 ---
 
-**Versão:** 2.12.0  
+**Versão:** 2.13.0  
 **Última atualização:** 14 Dezembro 2025  
 **Documentação:** [docs/ESTRUTURA_NODES_IMOBZI.md](docs/ESTRUTURA_NODES_IMOBZI.md)  
-**Changelog:** [docs/CHANGELOG_v2.12.md](docs/CHANGELOG_v2.12.md)
+**Changelog:** [docs/CHANGELOG_v2.13.md](docs/CHANGELOG_v2.13.md)  
+**Revisão Completa:** [docs/REVISAO_FASE1_PLANO_FASE2.md](docs/REVISAO_FASE1_PLANO_FASE2.md)
