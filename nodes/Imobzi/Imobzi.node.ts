@@ -9,38 +9,36 @@ import type {
 import { NodeConnectionType, NodeOperationError } from 'n8n-workflow';
 
 /**
- * n8n-nodes-imobzi-latest v2.13.0
- * Configuração dos recursos da API Imobzi
+ * n8n-nodes-imobzi-latest v2.14.0
+ * Configuracao dos recursos da API Imobzi
  * Baseado em +250 testes reais da API - 14/12/2025
  *
- * FASE 1 COMPLETA + FASE 2 (v2.13.0):
+ * FASE 1 COMPLETA + FASE 2 (v2.14.0):
  *
  * FASE 1 - CRUD Completo:
- * - TRANSAÇÃO: Get Many, Get by ID, Create, Update, Delete
- * - CALENDÁRIO: Get Many, Create, Update, Delete
- * - LOCAÇÃO: Get Many, Get by ID, Create, Update, Delete
+ * - TRANSACAO: Get Many, Get by ID, Create, Update, Delete
+ * - CALENDARIO: Get Many, Create, Update, Delete
+ * - LOCACAO: Get Many, Get by ID, Create, Update, Delete
  * - FATURA: Get Many, Get by ID, Create, Update
  *
  * FASE 2 - Novos Recursos:
- * - TIMELINE: Histórico do contato (notas, chamadas, visitas)
- * - PROPOSTA: Propostas de deals
- * - RESERVA DE IMÓVEL: Reservas vinculadas a deals
- * - MATCH DE IMÓVEIS: Imóveis compatíveis com perfil do cliente
+ * - TIMELINE: Historico do contato (notas, chamadas, visitas)
+ * - RESERVA DE IMOVEL: Reservas vinculadas a deals
  *
- * Correções v2.12.0 mantidas:
+ * Recursos removidos (erro 401 na API):
+ * - PROPOSTA: API nao autorizada
+ * - MATCH DE IMOVEIS: API nao autorizada
+ *
+ * Correcoes v2.12.0 mantidas:
  * - DEALS: Status win, stagnant, property_radar, out_of_date
  * - DEALS: deal_type=rent
- * - CALENDÁRIO: item_type task, whatsapp, visit, call
+ * - CALENDARIO: item_type task, whatsapp, visit, call
  * - FATURAS: status=canceled (1 L)
  *
  * Descobertas da API (14/12/2025):
  * - Contatos: 16.064 | Deals: 2.434
  * - Tags: 57 | Media Sources: 38
  * - Pipeline Groups: 5 | Pipelines: 7
- *
- * Comportamento da API:
- * - /v1/deals REQUER user_id (all ou específico)
- * - /v1/calendar REQUER search_all=true OU user_id específico
  */
 interface ResourceConfig {
 	endpoint: string;
@@ -143,22 +141,11 @@ const resourceConfig: { [resource: string]: ResourceConfig } = {
 		dataKey: 'timeline',
 		paginationType: 'cursor',
 	},
-	proposal: {
-		endpoint: '/v1/proposal',
-		singularEndpoint: '/v1/proposal',
-		dataKey: 'proposals',
-		paginationType: 'none',
-	},
 	propertyReserve: {
 		endpoint: '/v1/property-reserves',
 		singularEndpoint: '/v1/property-reserve',
 		dataKey: 'reserves',
 		paginationType: 'none',
-	},
-	propertyMatch: {
-		endpoint: '/v1/deal',
-		dataKey: 'properties',
-		paginationType: 'cursor',
 	},
 };
 
@@ -168,9 +155,9 @@ export class Imobzi implements INodeType {
 		name: 'imobzi',
 		icon: 'file:imobzi.svg',
 		group: ['transform'],
-		version: 16, // v2.13.0
+		version: 17, // v2.14.0
 		subtitle: '={{$parameter["operation"] + ": " + $parameter["resource"]}}',
-		description: 'Integração com a API da Imobzi v2.13.0 - Fase 1 + Fase 2 Completas',
+		description: 'Integracao com a API da Imobzi v2.14.0 - Fase 1 + Fase 2 Testadas',
 		defaults: {
 			name: 'Imobzi',
 		},
@@ -191,27 +178,25 @@ export class Imobzi implements INodeType {
 				noDataExpression: true,
 				options: [
 					{ name: 'Banco', value: 'bank' },
-					{ name: 'Calendário', value: 'calendar' },
+					{ name: 'Calendario', value: 'calendar' },
 					{ name: 'Conta Financeira', value: 'financialAccount' },
 					{ name: 'Contato', value: 'contact' },
 					{ name: 'Documento', value: 'document' },
-					{ name: 'Estágio (Pipeline)', value: 'pipeline' },
+					{ name: 'Estagio (Pipeline)', value: 'pipeline' },
 					{ name: 'Fatura', value: 'invoice' },
 					{ name: 'Funil (Deal)', value: 'deal' },
-					{ name: 'Funil Por Estágio', value: 'dealByStage' },
+					{ name: 'Funil Por Estagio', value: 'dealByStage' },
 					{ name: 'Grupo De Funil', value: 'pipelineGroup' },
-					{ name: 'Histórico (Timeline)', value: 'timeline' },
-					{ name: 'Imóvel', value: 'property' },
-					{ name: 'Locação', value: 'lease' },
-					{ name: 'Match De Imovei', value: 'propertyMatch' },
+					{ name: 'Historico (Timeline)', value: 'timeline' },
+					{ name: 'Imovel', value: 'property' },
+					{ name: 'Locacao', value: 'lease' },
 					{ name: 'Motivo De Perda', value: 'lostReason' },
 					{ name: 'Origem (Media Source)', value: 'mediaSource' },
-					{ name: 'Proposta', value: 'proposal' },
-					{ name: 'Reserva De Imóvel', value: 'propertyReserve' },
+					{ name: 'Reserva De Imovel', value: 'propertyReserve' },
 					{ name: 'Tag De Contato', value: 'contactTag' },
-					{ name: 'Tipo De Imóvel', value: 'propertyType' },
-					{ name: 'Transação Financeira', value: 'transaction' },
-					{ name: 'Usuário', value: 'user' },
+					{ name: 'Tipo De Imovel', value: 'propertyType' },
+					{ name: 'Transacao Financeira', value: 'transaction' },
+					{ name: 'Usuario', value: 'user' },
 				],
 				default: 'contact',
 			},
@@ -383,25 +368,6 @@ export class Imobzi implements INodeType {
 				default: 'getAll',
 			},
 
-			// ==================== OPERATIONS - PROPOSAL ====================
-			{
-				displayName: 'Operação',
-				name: 'operation',
-				type: 'options',
-				noDataExpression: true,
-				displayOptions: {
-					show: {
-						resource: ['proposal'],
-					},
-				},
-				options: [
-					{ name: 'Atualizar', value: 'update', action: 'Atualizar proposta' },
-					{ name: 'Criar', value: 'create', action: 'Criar proposta' },
-					{ name: 'Get Many', value: 'getAll', action: 'Listar propostas' },
-				],
-				default: 'getAll',
-			},
-
 			// ==================== OPERATIONS - PROPERTY RESERVE ====================
 			{
 				displayName: 'Operação',
@@ -417,23 +383,6 @@ export class Imobzi implements INodeType {
 					{ name: 'Cancelar', value: 'delete', action: 'Cancelar reserva' },
 					{ name: 'Criar', value: 'create', action: 'Criar reserva' },
 					{ name: 'Get Many', value: 'getAll', action: 'Listar reservas' },
-				],
-				default: 'getAll',
-			},
-
-			// ==================== OPERATIONS - PROPERTY MATCH ====================
-			{
-				displayName: 'Operação',
-				name: 'operation',
-				type: 'options',
-				noDataExpression: true,
-				displayOptions: {
-					show: {
-						resource: ['propertyMatch'],
-					},
-				},
-				options: [
-					{ name: 'Get Many', value: 'getAll', action: 'Listar imoveis compativeis' },
 				],
 				default: 'getAll',
 			},
@@ -665,21 +614,6 @@ export class Imobzi implements INodeType {
 				},
 			},
 
-			// ==================== PROPOSAL REQUIRED FIELDS ====================
-			{
-				displayName: 'ID Do Deal',
-				name: 'proposalDealId',
-				type: 'string',
-				required: true,
-				default: '',
-				description: 'ID do deal para buscar/criar propostas',
-				displayOptions: {
-					show: {
-						resource: ['proposal'],
-					},
-				},
-			},
-
 			// ==================== PROPERTY RESERVE REQUIRED FIELDS ====================
 			{
 				displayName: 'ID Do Deal',
@@ -691,33 +625,6 @@ export class Imobzi implements INodeType {
 				displayOptions: {
 					show: {
 						resource: ['propertyReserve'],
-					},
-				},
-			},
-
-			// ==================== PROPERTY MATCH REQUIRED FIELDS ====================
-			{
-				displayName: 'ID Do Deal',
-				name: 'matchDealId',
-				type: 'string',
-				required: true,
-				default: '',
-				description: 'ID do deal para buscar imóveis compatíveis',
-				displayOptions: {
-					show: {
-						resource: ['propertyMatch'],
-					},
-				},
-			},
-			{
-				displayName: 'ID Do Perfil (Opcional)',
-				name: 'matchProfileId',
-				type: 'string',
-				default: '',
-				description: 'ID do perfil do cliente para match (opcional)',
-				displayOptions: {
-					show: {
-						resource: ['propertyMatch'],
 					},
 				},
 			},
@@ -796,21 +703,6 @@ export class Imobzi implements INodeType {
 					show: {
 						resource: ['propertyReserve'],
 						operation: ['delete'],
-					},
-				},
-			},
-
-			// ==================== PROPOSAL ID FIELD ====================
-			{
-				displayName: 'ID Da Proposta',
-				name: 'proposalId',
-				type: 'string',
-				required: true,
-				default: '',
-				displayOptions: {
-					show: {
-						resource: ['proposal'],
-						operation: ['update'],
 					},
 				},
 			},
@@ -1716,9 +1608,6 @@ export class Imobzi implements INodeType {
 							const contactId = this.getNodeParameter('timelineContactId', itemIndex) as string;
 							const contactType = this.getNodeParameter('timelineContactType', itemIndex) as string;
 							endpoint = `/v1/${contactType}/${contactId}/notes`;
-						} else if (resource === 'proposal') {
-							const dealId = this.getNodeParameter('proposalDealId', itemIndex) as string;
-							endpoint = `/v1/proposal/deal/${dealId}`;
 						} else if (resource === 'propertyReserve') {
 							endpoint = '/v1/property-reserves';
 						}
@@ -1751,9 +1640,6 @@ export class Imobzi implements INodeType {
 						} else if (resource === 'invoice') {
 							const invoiceId = this.getNodeParameter('invoiceId', itemIndex) as string;
 							endpoint = `/v1/invoice/${invoiceId}`;
-						} else if (resource === 'proposal') {
-							const proposalId = this.getNodeParameter('proposalId', itemIndex) as string;
-							endpoint = `/v1/proposal/${proposalId}`;
 						}
 						const updateBodyJson = this.getNodeParameter('body', itemIndex) as string;
 						body = JSON.parse(updateBodyJson);
@@ -1922,27 +1808,11 @@ export class Imobzi implements INodeType {
 							endpoint = '/v1/timeline';
 						}
 
-						// PROPOSAL: Buscar propostas do deal
-						if (resource === 'proposal') {
-							const dealId = this.getNodeParameter('proposalDealId', itemIndex) as string;
-							endpoint = `/v1/proposal/deal/${dealId}`;
-						}
-
 						// PROPERTY RESERVE: Buscar reservas do deal
 						if (resource === 'propertyReserve') {
 							const dealId = this.getNodeParameter('reserveDealId', itemIndex) as string;
 							qs.deal_id = dealId;
 							endpoint = '/v1/property-reserves';
-						}
-
-						// PROPERTY MATCH: Buscar imóveis compatíveis com o deal
-						if (resource === 'propertyMatch') {
-							const dealId = this.getNodeParameter('matchDealId', itemIndex) as string;
-							const profileId = this.getNodeParameter('matchProfileId', itemIndex, '') as string;
-							endpoint = `/v1/deal/${dealId}/properties-match`;
-							if (profileId) {
-								qs.profile_id = profileId;
-							}
 						}
 
 						// Limite
