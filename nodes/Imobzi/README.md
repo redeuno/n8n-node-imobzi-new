@@ -1,97 +1,197 @@
-# Imobzi Node v2.6.0
+# Imobzi Node para n8n
 
-Node n8n para integração com a API da Imobzi.
+Integração completa com a API da Imobzi - Plataforma de Gestão Imobiliária.
 
-## Recursos
+## Versão 2.4.0
 
-### CRUD Completo
+### Novidades
+- ✅ **Período pré-definido em faturas**: 15, 30, 60, 90 dias + personalizado
+- ✅ **Dropdown de Origem** em contatos (OLX, Site, Facebook, WhatsApp, etc.)
+- ✅ **Dropdown de Tags** em contatos (Comprador, Inquilino, Proprietário, etc.)
+- ✅ Cálculo automático de datas baseado no período selecionado
+- ✅ CPF/CNPJ aceita formatação (com pontos e traços)
+- ✅ Status de fatura corrigido
+- ✅ Método de pagamento em faturas
 
-| Recurso | Create | Read | Update | Delete |
-|---------|--------|------|--------|--------|
-| Contato | ✅ | ✅ | ✅ | ✅ |
-| Imóvel | ✅ | ✅ | ✅ | ✅ |
-| Deal | ✅ | ✅ | ✅ | ❌ |
-| Locação | ❌ | ✅ | ❌ | ❌ |
-| Fatura | ❌ | ✅ | ❌ | ❌ |
+### Roadmap
+- **Fase 6 (v3.0.0):** CRUD Completo - Criar, Atualizar e Excluir
 
-### Operações de Leitura
+## Funcionalidades
 
-- **Contato**: Listar, Buscar por ID/Código, Verificar Existência
-- **Imóvel**: Listar, Buscar por ID/Código, Estatísticas
-- **Locação**: Listar, Buscar por ID
-- **Fatura**: Listar, Buscar por ID
-- **Deal**: Listar (plana ou Kanban)
-- **Transação Financeira**: Listar com filtros completos
-- **Calendário**: Listar com filtros avançados
-- **Auxiliares**: Usuário, Documento, Estágio, Grupo de Funil, Tipo de Imóvel, Origem, Tag, Motivo de Perda, Banco
+### Recursos Disponíveis
+
+| Recurso | Operações |
+|---------|-----------|
+| **Contato** | Listar, Buscar por ID, Buscar por Código, Verificar Existência, Criar |
+| **Imóvel** | Listar, Buscar por ID, Buscar por Código, Estatísticas |
+| **Locação** | Listar, Buscar por ID |
+| **Fatura** | Listar, Buscar por ID |
+| **Funil (Deal)** | Listar (busca plana) |
+| **Funil Por Estágio** | Listar (visão Kanban) |
+| **Transação Financeira** | Listar |
+| **Calendário** | Listar (requer ano/mês) |
+| **Documento** | Listar |
+| **Usuário** | Listar |
+| **Estágio (Pipeline)** | Listar |
+| **Grupo de Funil** | Listar |
+| **Tipo de Imóvel** | Listar |
+| **Origem (Media Source)** | Listar |
+| **Tag de Contato** | Listar |
+| **Motivo de Perda** | Listar |
+| **Banco** | Listar |
+
+## Configuração
+
+### Credenciais
+
+1. Acesse o painel da Imobzi
+2. Vá para **Integrações & Automações** > **Chave de API**
+3. Clique em **"Adicionar uma nova chave de API"**
+4. Nomeie a chave e selecione as permissões necessárias
+5. Copie a chave gerada
+6. No n8n, adicione uma nova credencial **Imobzi API**
+7. Cole a chave de API
+
+### Pré-requisitos
+
+- **Plano Imobzi**: CRM Business ou Gestão de Locação Real Estate
+- **Chave de API**: Gerada no painel da Imobzi
+- **Permissões**: Configuradas para os métodos necessários
+
+## Endpoints da API
+
+| Endpoint | Recurso |
+|----------|---------|
+| `/v1/contacts` | Contatos |
+| `/v1/person/{id}` | Pessoa por ID |
+| `/v1/person/code/{code}` | Pessoa por Código |
+| `/v1/properties` | Imóveis |
+| `/v1/property/{id}` | Imóvel por ID |
+| `/v1/property/code/{code}` | Imóvel por Código |
+| `/v1/property/{id}/statistics` | Estatísticas do Imóvel |
+| `/v1/leases` | Locações |
+| `/v1/lease/{id}` | Locação por ID |
+| `/v1/invoices` | Faturas |
+| `/v1/invoice/{id}` | Fatura por ID |
+| `/v1/deals/search` | Deals (busca plana) |
+| `/v1/deals` | Deals (Kanban) |
+| `/v1/financial/transactions` | Transações |
+| `/v1/calendar` | Calendário |
+| `/v1/users` | Usuários |
+| `/v1/pipelines` | Estágios (Pipeline) |
+| `/v1/pipeline-groups` | Grupos de Funil |
+| `/v1/property-types` | Tipos de Imóvel |
+| `/v1/media-sources` | Origens |
+| `/v1/contacts/tags` | Tags de Contato |
+| `/v1/deal/lost-reason` | Motivos de Perda |
+| `/v1/banks` | Bancos |
+| `/v1/contact/exists` | Verificar Existência |
 
 ## Filtros Disponíveis
 
-### Transações Financeiras (NOVO v2.6.0)
-- Conta Bancária (account_id)
-- Data Início/Fim (start_at, end_at)
-- Status (paid, pending)
-- Tipo (income, expense)
-- Ordenar Por (due_date, paid_at, amount)
-- Ordem (asc, desc)
+### Contato
+| Filtro | Parâmetro | Valores |
+|--------|-----------|---------|
+| Tipo de Contato | `contact_type` | person, organization, lead |
+| Origem | `media_source` | Texto livre (ex: OLX, Site) |
+| Tags | `tags` | Texto livre |
+| Smart List | `smart_list` | with_deals, my_contacts, new_leads, etc |
+| ID do Usuário | `user_id` | String (use Usuário > Get Many) |
+| Busca | `search_text` | Nome, email ou telefone |
 
-### Contatos
-- Usuário Responsável (16 usuários)
-- Origem (38 opções)
-- Tags (57 opções)
-- Smart List (12 opções)
-- Tipo de Contato
-- Busca por texto
-
-### Imóveis
-- Corretor (16 usuários)
-- Smart List (16 opções)
-- Status, Finalidade
+### Imóvel
+| Filtro | Parâmetro | Valores |
+|--------|-----------|---------|
+| Smart List | `smart_list` | available, rent, sale, reserved, etc |
+| Finalidade | `finality` | residential, commercial, rural |
+| Status | `status` | available, unavailable, reserved |
+| ID do Corretor | `user_id` | String (use Usuário > Get Many) |
 
 ### Locação
-- Smart List (9 opções)
+| Filtro | Parâmetro | Valores |
+|--------|-----------|---------|
+| Smart List | `smart_list` | active, inactive |
 
-### Faturas
-- Período (15, 30, 60, 90 dias, custom)
-- Status (pending, paid, overdue, canceled, etc.)
-- Método de Pagamento
+### Fatura
+| Filtro | Parâmetro | Valores |
+|--------|-----------|---------|
+| Status | `status` | pending, paid, overdue, canceled, partially_paid, expired, deleted, all |
+| Método de Pagamento | `payment_method` | bank_slip, pix, credit_card |
 
-### Deals
-- Corretor (16 usuários)
-- Estágio (7 opções)
-- Status (open, in_progress, win, lost, etc.)
-- Tipo (rent, sale, both, all)
+### Deal
+| Filtro | Parâmetro | Valores |
+|--------|-----------|---------|
+| Status | `deal_status` | in progress, win, lost, stagnant, out_of_date, property_radar, all |
+| ID do Usuário | `user_id` | String (use Usuário > Get Many) |
+| ID do Estágio | `pipeline_id` | Number (use Estágio > Get Many) |
+| Mostrar Atividades | `show_activities` | true/false |
 
 ### Calendário
-- Usuário (Todos ou específico)
-- Tipo de Item (task, visit, whatsapp, call)
-- Exibir Feriados
+| Filtro | Parâmetro | Valores |
+|--------|-----------|---------|
+| Tipo de Item | `item_type` | task, visit, whatsapp, call |
+| ID do Usuário | `user_id` | String (use Usuário > Get Many) |
 
 ## Paginação
 
-O node suporta auto-paginação:
-- 50, 100, 200, 500 ou Todos (máx 5000) registros
-- Contacts: cursor-based (sempre 50 por página)
-- Invoices/Transactions: next_page-based
+A API usa dois tipos de paginação:
 
-## Changelog
+### Cursor (contacts, properties, leases, deals)
+- Retorno inclui `cursor` para próxima página
+- Auto-paginação implementada no node
 
-### v2.6.0
-- ✅ Filtros completos em Transações Financeiras
-- ✅ CRUD: Update e Delete para Contact, Property
-- ✅ Deal: Update e Get by ID
-- ✅ Filtros validados na API
+### Next Page (invoices, transactions)
+- Retorno inclui `next_page` com número da próxima página
+- Auto-paginação implementada no node
 
-### v2.5.0
-- ✅ Calendar: search_all=true + item_type
-- ✅ 57 Tags em dropdown
-- ✅ 38 Origens em dropdown
-- ✅ 16 Usuários com IDs reais
+### Limites
+- Selecione: 50, 100, 200, 500 ou Todos (máx 5000)
+- A API limita a 50 registros por requisição
 
-### v2.4.0
-- ✅ Período pré-definido em faturas
-- ✅ CPF/CNPJ aceita formatação
+## IDs
+
+| Tipo | Formato | Exemplo |
+|------|---------|---------|
+| Usuários | String alfanumérica | P1ibK4GFPqZYKIx9e55RpQobt7J2 |
+| Contatos | String numérica | 5352720932798464 |
+| Imóveis | String numérica | 4550464861896704 |
+| Locações | Number | 5987740112388096 |
+| Faturas | String UUID | 536edb56c6cb11f0... |
+| Pipelines | Number | 4584666827849728 |
+
+## Autenticação
+
+A API usa autenticação via header `X-Imobzi-Secret`:
+
+```
+X-Imobzi-Secret: YOUR_API_KEY
+Content-Type: application/json
+```
+
+**Base URL**: `https://api.imobzi.app`
+
+## Limitações Conhecidas da API
+
+⚠️ Alguns filtros não funcionam corretamente na API Imobzi:
+- `contact_type` - A API pode ignorar este filtro
+- `finality` - A API pode ignorar este filtro
+- `/v1/property/exists` - Pode retornar resultados incorretos
+
+## Documentação Oficial
+
+- [Portal do Desenvolvedor Imobzi](https://developer.imobzi.com/)
+- [Como funciona a chave de API](https://help.imobzi.com/pt-br/article/como-funciona-a-chave-de-api-1nieky8/)
+- [Como usar webhooks na Imobzi](https://www.imobzi.com/docs/primeiros-passos/integracoes-e-automacoes/como-criar-e-usar-webhooks-na-imobzi/)
+
+## Suporte
+
+Para suporte técnico:
+- **Documentação**: https://developer.imobzi.com/
+- **GitHub**: https://github.com/redeuno/n8n-node-imobzi-new
+- **Issues**: https://github.com/redeuno/n8n-node-imobzi-new/issues
 
 ---
 
-Versão: 2.6.0
+**Criado por**: Bruno Mantovani  
+**Versão**: 2.4.0  
+**Última atualização**: Dezembro 2024

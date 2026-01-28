@@ -207,8 +207,8 @@ export class Imobzi implements INodeType {
 				name: 'operation',
 				type: 'options',
 				noDataExpression: true,
-				displayOptions: {
-					show: {
+		displayOptions: {
+			show: {
 						resource: ['contact'],
 					},
 				},
@@ -418,8 +418,8 @@ export class Imobzi implements INodeType {
 					},
 					hide: {
 						resource: ['contact'],
-					},
 				},
+			},
 			},
 
 			// ==================== CONTACT - TYPE FOR OPERATIONS ====================
@@ -667,7 +667,7 @@ export class Imobzi implements INodeType {
 				name: 'leaseId',
 				type: 'string',
 				required: true,
-				default: '',
+								default: '',
 				displayOptions: {
 					show: {
 						resource: ['lease'],
@@ -680,9 +680,9 @@ export class Imobzi implements INodeType {
 			{
 				displayName: 'ID Da Fatura',
 				name: 'invoiceId',
-				type: 'string',
+								type: 'string',
 				required: true,
-				default: '',
+								default: '',
 				displayOptions: {
 					show: {
 						resource: ['invoice'],
@@ -711,7 +711,7 @@ export class Imobzi implements INodeType {
 			{
 				displayName: 'Quantidade De Registros',
 				name: 'recordLimit',
-				type: 'options',
+								type: 'options',
 				default: 50,
 								options: [
 					{ name: '50 Registros', value: 50 },
@@ -1180,7 +1180,7 @@ export class Imobzi implements INodeType {
 					{
 						displayName: 'Etapa',
 						name: 'pipeline_id',
-						type: 'options',
+								type: 'options',
 								default: '',
 						description: 'Filtrar por etapa do funil. ⚠️ Este filtro pode não funcionar na API.',
 						options: [
@@ -1200,7 +1200,7 @@ export class Imobzi implements INodeType {
 								type: 'options',
 								default: '',
 						description: 'Filtrar por grupo de funil. ⚠️ Este filtro pode não funcionar na API.',
-						options: [
+								options: [
 							{ name: 'Captação De Imóveis', value: '5370013421666304' },
 							{ name: 'Comissões', value: '6405034089644032' },
 							{ name: 'Geral De Negócios', value: '5675099632959488' },
@@ -1283,7 +1283,7 @@ export class Imobzi implements INodeType {
 					{
 						displayName: 'Etapa',
 						name: 'pipeline_id',
-						type: 'options',
+								type: 'options',
 								default: '',
 						description: 'Filtrar por etapa específica do funil. ⚠️ Este filtro pode não funcionar na API.',
 						options: [
@@ -1303,7 +1303,7 @@ export class Imobzi implements INodeType {
 								type: 'options',
 								default: '',
 						description: 'Filtrar por grupo de funil. ⚠️ Este filtro pode não funcionar na API.',
-						options: [
+								options: [
 							{ name: 'Captação De Imóveis', value: '5370013421666304' },
 							{ name: 'Comissões', value: '6405034089644032' },
 							{ name: 'Geral De Negócios', value: '5675099632959488' },
@@ -1570,7 +1570,7 @@ export class Imobzi implements INodeType {
 							const transactionId = this.getNodeParameter('transactionId', itemIndex) as string;
 							endpoint = `/v1/financial/transaction/${transactionId}`;
 						} else {
-							const id = this.getNodeParameter('id', itemIndex) as string;
+						const id = this.getNodeParameter('id', itemIndex) as string;
 							endpoint = `${config.singularEndpoint || config.endpoint}/${id}`;
 						}
 						break;

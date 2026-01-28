@@ -1,17 +1,17 @@
-# Guia de Instalação e Uso - n8n-nodes-imobzi-latest
+# Guia de Instalação e Uso - n8n-node-imobzi-new
 
 ## 📦 Pacote
 
-**npm**: https://www.npmjs.com/package/n8n-nodes-imobzi-latest  
-**GitHub**: https://github.com/redeuno/n8n-nodes-imobzi-latest  
-**Versão**: 1.2.0
+**npm**: https://www.npmjs.com/package/n8n-node-imobzi-new  
+**GitHub**: https://github.com/redeuno/n8n-node-imobzi-new  
+**Versão**: 1.0.0
 
 ## 🚀 Como Instalar
 
 ### Opção 1: Instalação Global (Recomendado)
 
 ```bash
-npm install -g n8n-nodes-imobzi-latest
+npm install -g n8n-node-imobzi-new
 ```
 
 ### Opção 2: Instalação via n8n Community Nodes
@@ -19,7 +19,7 @@ npm install -g n8n-nodes-imobzi-latest
 1. Acesse o n8n
 2. Vá para **Settings** > **Community Nodes**
 3. Clique em **Install**
-4. Digite `n8n-nodes-imobzi-latest`
+4. Digite `n8n-node-imobzi-new`
 5. Clique em **Install**
 
 ## 🔧 Configuração no n8n
@@ -53,160 +53,80 @@ Após instalar o pacote, reinicie o n8n para que os novos nodes sejam carregados
 
 **Localização**: Transform > Imobzi
 
-**Recursos Disponíveis**:
+**21 Recursos Disponíveis**:
 
 | Recurso | Operações |
 |---------|-----------|
-| Contato | Listar, Obter, Buscar por Código, Verificar Existência, Criar, Atualizar, Excluir |
-| Imóvel | Listar, Obter, Buscar por Código, Criar, Atualizar, Excluir |
-| Locação | Listar, Obter, Buscar por Código, Criar, Atualizar |
-| Fatura | Listar, Obter, Criar, Atualizar |
-| Contrato | Listar, Obter, Criar, Atualizar, Excluir |
-| Negócio (Deal) | Listar, Obter, Criar, Atualizar, Excluir |
-| Funil (Pipeline) | Listar, Obter |
-| Grupo de Funil | Listar, Obter |
-| Transação Financeira | Listar, Obter, Criar, Atualizar |
-| Calendário | Listar, Obter, Criar, Atualizar, Excluir |
-| Usuário | Listar, Obter |
-| Tipo de Imóvel | Listar |
+| Contato | Criar, Obter, Listar, Atualizar, Excluir |
+| Pessoa | Criar, Obter, Listar, Atualizar, Excluir |
+| Organização | Criar, Obter, Listar, Atualizar, Excluir |
+| Lead | Criar, Obter, Listar, Atualizar, Excluir |
+| Imóvel | Criar, Obter, Listar, Atualizar, Excluir |
+| Contrato | Criar, Obter, Listar, Atualizar, Excluir |
+| Locação | Criar, Obter, Listar, Atualizar, Excluir |
+| Documento | Criar, Obter, Listar, Atualizar, Excluir |
+| Usuário | Criar, Obter, Listar, Atualizar, Excluir |
+| Negócio (Deal) | Criar, Obter, Listar, Atualizar, Excluir |
+| Funil (Pipeline) | Criar, Obter, Listar, Atualizar, Excluir |
+| Grupo de Funil | Criar, Obter, Listar, Atualizar, Excluir |
+| Conta Financeira | Criar, Obter, Listar, Atualizar, Excluir |
+| Transação Financeira | Criar, Obter, Listar, Atualizar, Excluir |
+| Categoria Financeira | Criar, Obter, Listar, Atualizar, Excluir |
+| Fatura | Criar, Obter, Listar, Atualizar, Excluir |
+| Calendário | Criar, Obter, Listar, Atualizar, Excluir |
+| Webhook | Criar, Obter, Listar, Atualizar, Excluir |
+| Integração | Criar, Obter, Listar, Atualizar, Excluir |
+| Bairro | Listar, Obter |
+| Tipo de Imóvel | Listar, Obter |
 
 ### 2. Imobzi Trigger (Webhook)
 
 **Localização**: Trigger > Imobzi Trigger
 
-**Eventos Suportados**:
+**25 Eventos Suportados**:
 
 | Categoria | Eventos |
 |-----------|---------|
-| Contatos | `contact.created`, `contact.updated` |
-| Imóveis | `property.created`, `property.updated` |
-| Negócios | `deal.created`, `deal.updated`, `deal.won`, `deal.lost` |
-| Locações | `lease.created`, `lease.updated` |
-| Contratos | `contract.created`, `contract.updated` |
-| Faturas | `invoice.created`, `invoice.paid` |
-| Visitas | `visit.scheduled`, `visit.cancelled` |
-| Tarefas | `task.created`, `task.updated` |
+| Leads | `lead_created`, `lead_updated` |
+| Contatos | `contact_created`, `contact_updated` |
+| Imóveis | `property_created`, `property_updated` |
+| Negócios | `deal_created`, `deal_updated`, `deal_moved`, `deal_won`, `deal_lost` |
+| Locações | `lease_created`, `lease_updated` |
+| Contratos | `contract_created`, `contract_updated` |
+| Faturas | `invoice_created`, `invoice_paid`, `invoice_overdue` |
+| Documentos | `document_created`, `document_signed` |
+| Visitas | `visit_scheduled`, `visit_completed`, `visit_cancelled` |
+| Tarefas | `task_created`, `task_completed` |
+| Usuários | `user_created` |
 
-## 🆕 Novidades da Versão 1.2.0
-
-### Auto-Paginação
-
-Busque múltiplas páginas automaticamente:
-
-| Opção | Páginas |
-|-------|---------|
-| 50 | 1 página |
-| 100 | 2 páginas |
-| 200 | 4 páginas |
-| 500 | 10 páginas |
-| Todos | Máximo 1000 |
-
-### Busca por Código
-
-Busque registros pelo código interno:
-
-```json
-{
-  "resource": "property",
-  "operation": "getByCode",
-  "code": "326"
-}
-```
-
-Suportado para: **Pessoa, Lead, Organização, Imóvel, Locação**
-
-### Verificar Existência de Contato
-
-Verifique se um contato já existe antes de criar:
-
-```json
-{
-  "resource": "contact",
-  "operation": "checkExists",
-  "checkExistsBy": "cpf",
-  "checkExistsValue": "123.456.789-00"
-}
-```
-
-Busca por: **CPF, Email, Telefone, CNPJ**
-
-### Campos de Data Nativos
-
-Todos os campos de data agora usam o seletor de data nativo do n8n.
-
-### Dropdowns Pré-Definidos
-
-Todos os filtros agora têm opções pré-definidas em dropdowns para facilitar o uso.
+**Funcionalidades**:
+- Registro automático do webhook na API Imobzi
+- Filtragem por eventos específicos
+- Metadados completos (headers, timestamp)
 
 ## 🔄 Exemplos de Uso
 
-### Exemplo 1: Listar Contatos com Auto-Paginação
+### Exemplo 1: Listar Contatos
 
 ```json
 {
   "resource": "contact",
   "operation": "getAll",
-  "recordLimit": 200,
+  "options": {
+    "limit": 50
+  },
   "contactOptions": {
-    "contact_type": "person",
-    "media_source": "Site"
+    "contact_type": "person"
   }
 }
 ```
 
-### Exemplo 2: Verificar se Contato Existe
+### Exemplo 2: Criar Lead
 
 ```json
 {
-  "resource": "contact",
-  "operation": "checkExists",
-  "checkExistsBy": "email",
-  "checkExistsValue": "joao@email.com"
-}
-```
-
-### Exemplo 3: Obter Pessoa por ID
-
-```json
-{
-  "resource": "contact",
-  "operation": "get",
-  "contactTypeGet": "person",
-  "id": "5352720932798464"
-}
-```
-
-### Exemplo 4: Buscar Imóvel por Código
-
-```json
-{
-  "resource": "property",
-  "operation": "getByCode",
-  "code": "326"
-}
-```
-
-### Exemplo 5: Listar Imóveis Disponíveis para Venda
-
-```json
-{
-  "resource": "property",
-  "operation": "getAll",
-  "recordLimit": 500,
-  "propertyOptions": {
-    "smart_list": "sale",
-    "finality": "residential"
-  }
-}
-```
-
-### Exemplo 6: Criar Lead
-
-```json
-{
-  "resource": "contact",
+  "resource": "lead",
   "operation": "create",
-  "contactTypeCreate": "lead",
   "body": {
     "fullname": "João Silva",
     "email": "joao@email.com",
@@ -221,19 +141,29 @@ Todos os filtros agora têm opções pré-definidas em dropdowns para facilitar 
 }
 ```
 
-### Exemplo 7: Listar Calendário
+### Exemplo 3: Listar Transações Pagas
 
 ```json
 {
-  "resource": "calendar",
+  "resource": "financialTransaction",
   "operation": "getAll",
-  "year": 2025,
-  "month": 1,
-  "calendarOptions": {
-    "item_type": "visit"
+  "options": {
+    "start_at": "2024-01-01",
+    "end_at": "2024-12-31"
+  },
+  "transactionOptions": {
+    "status": "paid",
+    "order_by": "desc"
   }
 }
 ```
+
+### Exemplo 4: Webhook para Novos Leads
+
+1. Adicione **Imobzi Trigger** ao workflow
+2. Selecione evento `lead_created`
+3. Ative **Registrar Webhook Automaticamente**
+4. Conecte aos próximos nodes
 
 ## 🌐 Instalação em VPS
 
@@ -242,7 +172,7 @@ Todos os filtros agora têm opções pré-definidas em dropdowns para facilitar 
 ssh usuario@seu-servidor.com
 
 # 2. Instale o pacote
-npm install -g n8n-nodes-imobzi-latest
+npm install -g n8n-node-imobzi-new
 
 # 3. Reinicie o n8n
 
@@ -261,42 +191,30 @@ docker restart seu-container-n8n
 ### Verificar instalação
 
 ```bash
-npm list -g n8n-nodes-imobzi-latest
+npm list -g n8n-node-imobzi-new
 ```
 
-### Verificar versão
+### Verificar logs
 
 ```bash
-npm show n8n-nodes-imobzi-latest version
-```
+# PM2
+pm2 logs n8n
 
-### Atualizar para última versão
-
-```bash
-npm update -g n8n-nodes-imobzi-latest
+# systemd
+sudo journalctl -u n8n -f
 ```
 
 ### Reinstalar
 
-   ```bash
-npm uninstall -g n8n-nodes-imobzi-latest
-npm install -g n8n-nodes-imobzi-latest
-   ```
-
-### Verificar logs
-
-   ```bash
-# PM2
-   pm2 logs n8n
-   
-# systemd
-   sudo journalctl -u n8n -f
-   ```
+```bash
+npm uninstall -g n8n-node-imobzi-new
+npm install -g n8n-node-imobzi-new
+```
 
 ## 🔗 Links Úteis
 
-- **npm**: https://www.npmjs.com/package/n8n-nodes-imobzi-latest
-- **GitHub**: https://github.com/redeuno/n8n-nodes-imobzi-latest
+- **npm**: https://www.npmjs.com/package/n8n-node-imobzi-new
+- **GitHub**: https://github.com/redeuno/n8n-node-imobzi-new
 - **API Imobzi**: https://developer.imobzi.com/
 - **Chave de API**: https://help.imobzi.com/pt-br/article/como-funciona-a-chave-de-api-1nieky8/
 - **Webhooks**: https://www.imobzi.com/docs/primeiros-passos/integracoes-e-automacoes/como-criar-e-usar-webhooks-na-imobzi/
@@ -305,8 +223,8 @@ npm install -g n8n-nodes-imobzi-latest
 
 ```bash
 # Clone o repositório
-git clone https://github.com/redeuno/n8n-nodes-imobzi-latest.git
-cd n8n-nodes-imobzi-latest
+git clone https://github.com/redeuno/n8n-node-imobzi-new.git
+cd n8n-node-imobzi-new
 
 # Instale dependências
 npm install
@@ -328,7 +246,6 @@ npm publish
 ---
 
 **Criado por**: Bruno Mantovani  
-**Email**: bruno@redeuno.com.br  
-**GitHub**: [redeuno/n8n-nodes-imobzi-latest](https://github.com/redeuno/n8n-nodes-imobzi-latest)  
-**Versão**: 1.2.0  
+**GitHub**: [redeuno/n8n-node-imobzi-new](https://github.com/redeuno/n8n-node-imobzi-new)  
+**Versão**: 1.0.0  
 **Última atualização**: Dezembro 2024

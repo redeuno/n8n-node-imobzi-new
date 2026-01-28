@@ -358,8 +358,8 @@ Content-Type: application/json
 - `account_id` - Filtrar por conta
 - `lease_id` - Filtrar por locação
 - `contract_id` - Filtrar por contrato
-- `status` - Status (pending, paid, overdue, canceled, partially_paid, expired, deleted, all)
-- `payment_method` - Método de pagamento (bank_slip, pix, credit_card)
+- `status` - Status (paid, pending, overdue)
+- `payment_method` - Método de pagamento
 - `page` - Número da página
 
 **Estrutura de resposta**:
@@ -586,8 +586,8 @@ Para suporte técnico da API da Imobzi:
 - **Suporte**: https://help.imobzi.com/
 
 Para suporte do node n8n:
-- **GitHub**: https://github.com/redeuno/n8n-nodes-imobzi-latest
-- **Issues**: https://github.com/redeuno/n8n-nodes-imobzi-latest/issues
+- **GitHub**: https://github.com/redeuno/n8n-node-imobzi-new
+- **Issues**: https://github.com/redeuno/n8n-node-imobzi-new/issues
 
 ## Recursos Adicionais
 
@@ -597,40 +597,6 @@ Para suporte do node n8n:
 
 ---
 
-## Changelog
-
-### v2.4.0 (Dezembro 2024)
-- ✅ Período pré-definido em faturas (15, 30, 60, 90 dias + personalizado)
-- ✅ Dropdown de Origem em contatos
-- ✅ Dropdown de Tags em contatos
-- ✅ Cálculo automático de datas
-
-### v2.3.0 (Dezembro 2024)
-- ✅ Removido sanitização de CPF/CNPJ (API aceita COM formatação)
-- ✅ Filtros de data em faturas: `start_at` e `end_at`
-
-### v2.2.0 (Dezembro 2024)
-- ✅ Status de fatura corrigido: `cancelled` → `canceled`
-- ✅ Novas opções de status de fatura: partially_paid, expired, deleted, all
-- ✅ Filtro de método de pagamento adicionado
-- ✅ Descrições explicativas nos campos de ID
-- ✅ Avisos sobre limitações da API
-
-### Limitações Conhecidas da API
-
-⚠️ Alguns filtros não funcionam corretamente na API Imobzi:
-- `contact_type` - A API pode ignorar este filtro
-- `finality` - A API pode ignorar este filtro
-- `/v1/property/exists` - Pode retornar resultados incorretos
-- `show_activities` - Não retorna atividades mesmo quando true
-
-### Roadmap
-
-**Fase 6 (v3.0.0) - CRUD Completo:**
-- Create, Update e Delete para Contact, Property, Lease, Invoice, Deal, Calendar, Document
-
----
-
 **Criado por**: Bruno Mantovani  
-**Versão**: 2.4.0  
+**Versão**: 1.0.0  
 **Última atualização**: Dezembro 2024
